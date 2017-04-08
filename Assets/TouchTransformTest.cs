@@ -42,7 +42,7 @@ public class TouchTransformTest : MonoBehaviour
 
             baseScale = testObject.localScale.z;
             baseAngle = testObject.localEulerAngles.z;
-            basePosition = testObject.localPosition;
+            basePosition = testObject.position;
         }
 
         if (started)
@@ -68,14 +68,21 @@ public class TouchTransformTest : MonoBehaviour
 
             Debug.LogFormat("{0} / {1}", scaleMult, deltaAngle);
 
-            Vector2 nexta = Rotate(a, deltaAngle) * scaleMult;
+            Vector2 nexta = Rotate(a * scaleMult, deltaAngle);
             Vector2 nextO = nextTouch1 - nexta;
 
-            Debug.LogFormat("{0} / {1}", a, nexta);
+            //Debug.LogFormat("{0} / {1}", a, nexta);
 
             testObject.localScale = Vector3.one * baseScale * scaleMult;
             testObject.localEulerAngles = Vector3.forward * (baseAngle + deltaAngle);
-            testObject.localPosition = nextO;
+            testObject.position = nextO;
+        }
+        else
+        {
+            Debug.LogFormat("{0} ({1} / {2})",
+                            Angle(Input.mousePosition - touch1.position),
+                            Input.mousePosition,
+                            touch1.position);
         }
 
         if (Input.GetKeyUp(KeyCode.Space))
