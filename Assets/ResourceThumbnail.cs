@@ -13,11 +13,6 @@ public class ResourceThumbnail : InstanceView<ImageResource>
     [SerializeField]
     private Image image;
 
-    protected override void Configure()
-    {
-        Refresh();
-    }
-
     public override void Refresh()
     {
         image.sprite = config.sprite;

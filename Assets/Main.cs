@@ -25,13 +25,20 @@ public class Main : MonoBehaviour
     private InstancePoolSetup resourceThumbsSetup;
     private InstancePool<ImageResource> resourceThumbs;
 
+    [SerializeField]
+    private InstancePoolSetup graphicsSetup;
+    private InstancePool<FlatGraphic> graphics;
+
     private List<string> resourcePaths = new List<string>();
     private List<WWW> resourceLoads = new List<WWW>();
     private Dictionary<string, ImageResource> resources = new Dictionary<string, ImageResource>();
 
+    public FlatScene scene;
+
     private void Awake()
     {
         resourceThumbs = resourceThumbsSetup.Finalise<ImageResource>();
+        graphics = graphicsSetup.Finalise<FlatGraphic>(sort: false);
     }
 
     private void Start()
@@ -39,26 +46,21 @@ public class Main : MonoBehaviour
         StartCoroutine(LoadResources());
     }
 
+    private void Update()
+    {
+        
+    }
+
     private IEnumerator LoadResources()
     {
-        yield return StartCoroutine(FindResources("/storage/emulated/0/Download/"));
-        yield return StartCoroutine(FindResources("/storage/emulated/0/DCIM/"));
-        yield return StartCoroutine(FindResources("/storage/emulated/0/Pictures/"));
+        FindResources("/storage/emulated/0/Download/");
+        FindResources("/storage/emulated/0/DCIM/");
+        FindResources("/storage/emulated/0/Pictures/");
 
         loadingSlider.maxValue = resourcePaths.Count;
 
         resourceLoads.Clear();
-
-        foreach (string path in resourcePaths)
-        {
-            yield return null;
-
-            Debug.LogFormat("Queueing {0}", Path.GetFileNameWithoutExtension(path));
-
-            var request = new WWW("file://" + path);
-
-            resourceLoads.Add(request);
-        }
+        resourceLoads.AddRange(resourcePaths.Select(path => new WWW("file://" + path)));
 
         foreach (var load in resourceLoads)
         {
@@ -66,20 +68,10 @@ public class Main : MonoBehaviour
 
             try
             {
-                string baseName = Path.GetFileNameWithoutExtension(load.url);
-                string trueName = baseName;
-
-                int i = 1;
-
-                while (resources.ContainsKey(trueName))
-                {
-                    trueName = baseName + "_" + i;
-                }
-
                 var texture = load.texture;
                 var resource = new ImageResource
                 {
-                    name = trueName,
+                    name = Path.GetFileNameWithoutExtension(load.url),
                     path = load.url,
                     sprite = Sprite.Create(texture,
                                            new Rect(0, 0, texture.width, texture.height),
@@ -89,7 +81,7 @@ public class Main : MonoBehaviour
                                            SpriteMeshType.FullRect),
                 };
 
-                resources.Add(trueName, resource);
+                resources.Add(load.url, resource);
                 resourceThumbs.SetActive(resources.Values);
             }
             catch (Exception e)
@@ -101,9 +93,11 @@ public class Main : MonoBehaviour
         }
 
         resourceLoads.Clear();
+
+        graphics.SetActive(scene.graphics);
     }
 
-    private IEnumerator FindResources(string root)
+    private void FindResources(string root)
     {
         try
         {
@@ -118,7 +112,17 @@ public class Main : MonoBehaviour
             Debug.LogFormat("Looked for \"{0}\"", root);
             Debug.LogException(e);
         }
+    }
 
-        yield break;
+    public ImageResource GetImageResource(string uri)
+    {
+        ImageResource resource;
+
+        if (!resources.TryGetValue(uri, out resource))
+        {
+            resource = resources.First().Value;
+        }
+
+        return resource;
     }
 }

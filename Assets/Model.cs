@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 using Random = UnityEngine.Random;
 
-[SerializeField]
+[Serializable]
 public class FlatGraphic
 {
     public Vector2 position;
@@ -19,7 +19,7 @@ public class FlatGraphic
     public string graphicURI;
 }
 
-[SerializeField]
+[Serializable]
 public partial class FlatScene
 {
     public List<FlatGraphic> graphics = new List<FlatGraphic>();
