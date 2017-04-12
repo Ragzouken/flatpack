@@ -21,10 +21,18 @@ public class Main : MonoBehaviour
 {
     [SerializeField]
     private Slider loadingSlider;
+    [SerializeField]
+    private InstancePoolSetup resourceThumbsSetup;
+    private InstancePool<ImageResource> resourceThumbs;
 
     private List<string> resourcePaths = new List<string>();
     private List<WWW> resourceLoads = new List<WWW>();
     private Dictionary<string, ImageResource> resources = new Dictionary<string, ImageResource>();
+
+    private void Awake()
+    {
+        resourceThumbs = resourceThumbsSetup.Finalise<ImageResource>();
+    }
 
     private void Start()
     {
@@ -82,6 +90,7 @@ public class Main : MonoBehaviour
                 };
 
                 resources.Add(trueName, resource);
+                resourceThumbs.SetActive(resources.Values);
             }
             catch (Exception e)
             {
