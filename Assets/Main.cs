@@ -20,10 +20,15 @@ public class ImageResource
 public class Main : MonoBehaviour 
 {
     [SerializeField]
-    private Slider loadingSlider;
+    public GraphicRaycaster viewerRaycaster;
     [SerializeField]
-    private InstancePoolSetup resourceThumbsSetup;
-    private InstancePool<ImageResource> resourceThumbs;
+    public GraphicRaycaster creatorRayster;
+
+    [SerializeField]
+    private GraphicBrowserPanel graphicsBrowser;
+
+    [SerializeField]
+    private Slider loadingSlider;
 
     [SerializeField]
     private InstancePoolSetup graphicsSetup;
@@ -31,13 +36,12 @@ public class Main : MonoBehaviour
 
     private List<string> resourcePaths = new List<string>();
     private List<WWW> resourceLoads = new List<WWW>();
-    private Dictionary<string, ImageResource> resources = new Dictionary<string, ImageResource>();
+    public Dictionary<string, ImageResource> resources = new Dictionary<string, ImageResource>();
 
     public FlatScene scene;
 
     private void Awake()
     {
-        resourceThumbs = resourceThumbsSetup.Finalise<ImageResource>();
         graphics = graphicsSetup.Finalise<FlatGraphic>(sort: false);
     }
 
@@ -56,6 +60,7 @@ public class Main : MonoBehaviour
         FindResources("/storage/emulated/0/Download/");
         FindResources("/storage/emulated/0/DCIM/");
         FindResources("/storage/emulated/0/Pictures/");
+        FindResources("C:/Users/mark/Pictures/kooltool aesthetics");
 
         loadingSlider.maxValue = resourcePaths.Count;
 
@@ -82,7 +87,6 @@ public class Main : MonoBehaviour
                 };
 
                 resources.Add(load.url, resource);
-                resourceThumbs.SetActive(resources.Values);
             }
             catch (Exception e)
             {
@@ -107,10 +111,9 @@ public class Main : MonoBehaviour
             resourcePaths.AddRange(pngs);
             resourcePaths.AddRange(jpgs);
         }
-        catch (DirectoryNotFoundException e)
+        catch (DirectoryNotFoundException)
         {
-            Debug.LogFormat("Looked for \"{0}\"", root);
-            Debug.LogException(e);
+            Debug.LogFormat("Couldn't find \"{0}\"", root);
         }
     }
 
@@ -125,4 +128,99 @@ public class Main : MonoBehaviour
 
         return resource;
     }
+
+    public void CreateGraphic(ImageResource resource)
+    {
+        var graphic = scene.AddNewGraphic(resource.path);
+        graphic.position = new Vector2(Camera.main.pixelWidth,
+                                       Camera.main.pixelHeight) * 0.5f;
+
+        graphics.SetActive(scene.graphics);
+        graphics.Refresh();
+    }
+
+    #region Selection
+
+    public FlatGraphic selected { get; private set; }
+
+    public void Select(FlatGraphic graphic)
+    {
+        selected = graphic;
+    }
+
+    public void Deselect()
+    {
+        selected = null;
+    }
+
+    #endregion
+
+    #region Touch Controls
+
+    private bool tapping;
+    private Vector2 tapPosition;
+    private float holdTime = 0;
+
+    private void CheckTap()
+    {
+        // if there's a single touch just beginning, and it is not blocked
+        // by the ui, this is the start of a tap
+        if (Input.touchCount == 1 
+         && Input.GetTouch(0).phase == TouchPhase.Began
+         && !creatorRayster.IsPointBlocked(Input.GetTouch(0).position))
+        {
+            tapping = true;
+            holdTime = 0;
+            tapPosition = Input.GetTouch(0).position;
+        }
+
+        // track how long we have been holding the press
+        if (tapping)
+        {
+            holdTime += Time.deltaTime;
+        }
+
+        // if it's too long, it's not a tap
+        if (holdTime > .5f)
+        {
+            tapping = false;
+        }
+
+        // if we are tapping, and the tap touch is ending
+        if (Input.touchCount > 0 
+         && Input.GetTouch(0).phase == TouchPhase.Ended
+         && tapping)
+        {
+            // check if the touch moved too much to be considered a tap
+            float delta = (Input.GetTouch(0).position - tapPosition).magnitude;
+
+            if (delta < 5f)
+            {
+                var prev = selected;
+
+                Deselect();
+                
+                var hits = viewerRaycaster.Raycast(tapPosition);
+                var hit = hits.Select(h => h.gameObject.GetComponent<GraphicView>())
+                              .OfType<GraphicView>()
+                              .FirstOrDefault();
+
+                if (hit != null)
+                {
+                    if (hit.config == selected)
+                    {
+                        Deselect();
+                    }
+                    else
+                    {
+                        Select(hit.config);
+                    }
+                }
+            }
+
+            tapping = false;
+        }
+    }
+    
+    #endregion
 }

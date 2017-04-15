@@ -11,7 +11,16 @@ using Random = UnityEngine.Random;
 public class ResourceThumbnail : InstanceView<ImageResource> 
 {
     [SerializeField]
+    private GraphicBrowserPanel panel;
+    [SerializeField]
     private Image image;
+    [SerializeField]
+    private Button button;
+
+    private void Awake()
+    {
+        button.onClick.AddListener(() => panel.Choose(config));
+    }
 
     public override void Refresh()
     {

@@ -27,11 +27,11 @@ public partial class FlatScene
 
 public partial class FlatScene
 {
-    public FlatGraphic AddNewGraphic()
+    public FlatGraphic AddNewGraphic(string URI)
     {
         var graphic = new FlatGraphic
         {
-
+            graphicURI = URI,
         };
 
         graphics.Add(graphic);
