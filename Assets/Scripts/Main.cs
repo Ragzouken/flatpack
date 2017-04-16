@@ -40,6 +40,8 @@ public class Main : MonoBehaviour
 
     public FlatScene scene;
 
+    private FlatGraphic cameraControl;
+
     private void Awake()
     {
         graphics = graphicsSetup.Finalise<FlatGraphic>(sort: false);
@@ -52,6 +54,7 @@ public class Main : MonoBehaviour
 
     private void Update()
     {
+        graphics.SetActive(scene.graphics);
         graphics.Refresh();
 
         if (selected != null)
@@ -160,6 +163,15 @@ public class Main : MonoBehaviour
     public void Deselect()
     {
         selected = null;
+    }
+
+    public void DeleteSelected()
+    {
+        Assert.IsTrue(selected != null, "Deleting with nothing selected!");
+
+        scene.RemoveGraphic(selected);
+
+        Deselect();
     }
 
     #endregion
