@@ -52,7 +52,14 @@ public class Main : MonoBehaviour
 
     private void Update()
     {
-        
+        graphics.Refresh();
+
+        if (selected != null)
+        {
+            CheckTouchTransform();
+        }
+
+        CheckTouchSelect();
     }
 
     private IEnumerator LoadResources()
@@ -135,6 +142,8 @@ public class Main : MonoBehaviour
         graphic.position = new Vector2(Camera.main.pixelWidth,
                                        Camera.main.pixelHeight) * 0.5f;
 
+        Select(graphic);
+
         graphics.SetActive(scene.graphics);
         graphics.Refresh();
     }
@@ -161,7 +170,7 @@ public class Main : MonoBehaviour
     private Vector2 tapPosition;
     private float holdTime = 0;
 
-    private void CheckTap()
+    private void CheckTouchSelect()
     {
         // if there's a single touch just beginning, and it is not blocked
         // by the ui, this is the start of a tap
@@ -221,6 +230,118 @@ public class Main : MonoBehaviour
             tapping = false;
         }
     }
-    
+
+    private bool oneFinger;
+    private bool twoFinger;
+    private Vector2 prevTouch1, prevTouch2;
+    private float baseScale, baseAngle;
+    private Vector2 basePosition;
+
+    private void ResetGestures()
+    {
+        oneFinger = false;
+        twoFinger = false;
+    }
+
+    private void CheckTouchTransform()
+    {
+        Vector2 nextTouch1 = Vector2.zero;
+        Vector2 nextTouch2 = Vector2.zero;
+
+        bool mouse = false;
+
+        if (Input.touchCount > 0)
+        {
+            nextTouch1 = Input.GetTouch(0).position;
+        }
+        else if (Input.GetMouseButton(0))
+        {
+            nextTouch1 = Input.mousePosition;
+            mouse = true;
+        }
+
+        if (Input.touchCount > 1)
+        {
+            nextTouch2 = Input.GetTouch(1).position;
+        }
+
+        bool blocked1 = creatorRayster.IsPointBlocked(nextTouch1);
+        bool blocked2 = creatorRayster.IsPointBlocked(nextTouch2);
+
+        bool touch1Begin = Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began;
+        bool touch2Begin = Input.touchCount == 2 && Input.GetTouch(1).phase == TouchPhase.Began;
+
+        bool touch1Move = Input.touchCount == 1;
+
+        if ((touch1Begin || mouse) && !oneFinger && !blocked1)
+        {
+            prevTouch1 = nextTouch1;
+            basePosition = selected.position;
+
+            oneFinger = true;
+        }
+        else if ((touch1Move || mouse) && oneFinger)
+        {
+            selected.position = basePosition - prevTouch1 + nextTouch1;
+        }
+        else
+        {
+            oneFinger = false;
+        }
+
+        if (touch2Begin && !twoFinger && !blocked2)
+        {
+            twoFinger = true;
+
+            prevTouch1 = nextTouch1;
+            prevTouch2 = nextTouch2;
+
+            baseScale = selected.scale;
+            baseAngle = selected.direction;
+            basePosition = selected.position;
+        }
+        else if (Input.touchCount == 2 && twoFinger)
+        {
+            Vector2 a = prevTouch1 - basePosition;
+            Vector2 b = prevTouch2 - basePosition;
+            Vector2 c = prevTouch2 - prevTouch1;
+
+            float prevD = (prevTouch2 - prevTouch1).magnitude;
+            float nextD = (nextTouch2 - nextTouch1).magnitude;
+            float scaleMult = nextD / prevD;
+
+            float prevAngle = Angle(c);
+            float nextAngle = Angle(nextTouch2 - nextTouch1);
+            float deltaAngle = Mathf.DeltaAngle(prevAngle, nextAngle);
+
+            Vector2 nexta = Rotate(a * scaleMult, deltaAngle);
+            Vector2 nextO = nextTouch1 - nexta;
+
+            selected.scale = Mathf.Max(0.1f, baseScale * scaleMult);
+            selected.direction = baseAngle + deltaAngle;
+            selected.position = nextO;
+        }
+        else
+        {
+            twoFinger = false;
+        }
+    }
+
+    private static float Angle(Vector2 vector)
+    {
+        return Mathf.Atan2(vector.y, vector.x) * Mathf.Rad2Deg;
+    }
+
+    private static Vector2 Rotate(Vector2 vector, float angle)
+    {
+        float d = vector.magnitude;
+        float a = Angle(vector);
+
+        a += angle;
+        a *= Mathf.Deg2Rad;
+
+        return new Vector2(d * Mathf.Cos(a), d * Mathf.Sin(a));
+    }
+
     #endregion
 }

@@ -10,6 +10,8 @@ using Random = UnityEngine.Random;
 
 public class GraphicView : InstanceView<FlatGraphic>
 {
+    public const float pulseSpeed = 2;
+
     [SerializeField]
     private Main main;
     [SerializeField]
@@ -17,10 +19,16 @@ public class GraphicView : InstanceView<FlatGraphic>
 
     public override void Refresh()
     {
+        bool selected = main.selected == config;
+
+        float u = (Time.timeSinceLevelLoad * pulseSpeed) % 1;
+        u = Mathf.Sin(u * Mathf.PI * 2) * 0.5f + 0.5f;
+
         image.sprite = main.GetImageResource(config.graphicURI).sprite;
+        image.alphaHitTestMinimumThreshold = 0.25f;
 
         transform.position = config.position;
-        transform.localScale = config.scale * Vector3.one;
+        transform.localScale = config.scale * Vector3.one * (selected ? Mathf.Lerp(0.975f, 1.025f, u) : 1);
         transform.localEulerAngles = config.direction * Vector3.forward;
     }
 }
