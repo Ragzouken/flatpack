@@ -26,8 +26,9 @@ public class GraphicView : InstanceView<FlatGraphic>
 
         image.sprite = main.GetImageResource(config.graphicURI).sprite;
         image.alphaHitTestMinimumThreshold = 0.25f;
+        image.SetNativeSize();
 
-        transform.position = config.position;
+        transform.position = (Vector3) config.position + Vector3.back * config.depth;
         transform.localScale = config.scale * Vector3.one * (selected ? Mathf.Lerp(0.975f, 1.025f, u) : 1);
         transform.localEulerAngles = config.direction * Vector3.forward;
     }

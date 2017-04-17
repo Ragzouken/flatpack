@@ -25,6 +25,8 @@ public class Main : MonoBehaviour
     public GraphicRaycaster creatorRayster;
 
     [SerializeField]
+    private UIDragControl layerDrag;
+    [SerializeField]
     private GraphicBrowserPanel graphicsBrowser;
 
     [SerializeField]
@@ -42,9 +44,14 @@ public class Main : MonoBehaviour
 
     private FlatGraphic cameraControl;
 
+    private float prevDepth;
+
     private void Awake()
     {
-        graphics = graphicsSetup.Finalise<FlatGraphic>(sort: false);
+        graphics = graphicsSetup.Finalise<FlatGraphic>();
+
+        layerDrag.OnBegin += () => prevDepth = selected.depth;
+        layerDrag.OnDrag += displacement => selected.depth = prevDepth + displacement.y * 0.01f;
     }
 
     private void Start()
@@ -54,6 +61,8 @@ public class Main : MonoBehaviour
 
     private void Update()
     {
+        scene.graphics.Sort((a, b) => a.depth.CompareTo(b.depth));
+
         graphics.SetActive(scene.graphics);
         graphics.Refresh();
 
