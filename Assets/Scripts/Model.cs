@@ -15,6 +15,7 @@ public class FlatGraphic
     public float direction;
     public float scale = 1;
     public float depth;
+    public bool pinned;
 
     public string graphicURI;
 }

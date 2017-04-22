@@ -24,11 +24,13 @@ public class GraphicView : InstanceView<FlatGraphic>
         float u = (Time.timeSinceLevelLoad * pulseSpeed) % 1;
         u = Mathf.Sin(u * Mathf.PI * 2) * 0.5f + 0.5f;
 
+        image.color = (config.pinned && !main.playing) ? Color.white * 0.75f : Color.white;
+
         image.sprite = main.GetImageResource(config.graphicURI).sprite;
         image.alphaHitTestMinimumThreshold = 0.25f;
         image.SetNativeSize();
 
-        transform.position = (Vector3) config.position + Vector3.back * config.depth;
+        transform.localPosition = (Vector3) config.position + Vector3.back * config.depth;
         transform.localScale = config.scale * Vector3.one * (selected ? Mathf.Lerp(0.975f, 1.025f, u) : 1);
         transform.localEulerAngles = config.direction * Vector3.forward;
     }

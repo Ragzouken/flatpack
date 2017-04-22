@@ -27,6 +27,8 @@ public class Main : MonoBehaviour
     [SerializeField]
     private UIDragControl layerDrag;
     [SerializeField]
+    private CanvasGroup layerGroup;
+    [SerializeField]
     private GraphicBrowserPanel graphicsBrowser;
 
     [SerializeField]
@@ -36,19 +38,34 @@ public class Main : MonoBehaviour
     private InstancePoolSetup graphicsSetup;
     private InstancePool<FlatGraphic> graphics;
 
+    [SerializeField]
+    private InstancePoolSetup pinnedSetup;
+    private InstancePool<FlatGraphic> pinned;
+
     private List<string> resourcePaths = new List<string>();
     private List<WWW> resourceLoads = new List<WWW>();
     public Dictionary<string, ImageResource> resources = new Dictionary<string, ImageResource>();
 
     public FlatScene scene;
 
-    private FlatGraphic cameraControl;
+    private FlatGraphic worldObject = new FlatGraphic { scale = 1 };
+    [SerializeField]
+    private Transform worldTransform;
 
     private float prevDepth;
+
+    [SerializeField]
+    private GameObject toolbar;
+    [SerializeField]
+    private GameObject debug;
+
+    [SerializeField]
+    private Toggle pinnedToggle;
 
     private void Awake()
     {
         graphics = graphicsSetup.Finalise<FlatGraphic>();
+        pinned = pinnedSetup.Finalise<FlatGraphic>();
 
         layerDrag.OnBegin += () => prevDepth = selected.depth;
         layerDrag.OnDrag += displacement => selected.depth = prevDepth + displacement.y * 0.01f;
@@ -59,19 +76,93 @@ public class Main : MonoBehaviour
         StartCoroutine(LoadResources());
     }
 
-    private void Update()
+    public void Save()
+    {
+        string data = JsonUtility.ToJson(scene);
+
+        File.WriteAllText(Application.persistentDataPath + "/test-scene.json", data);
+    }
+
+    public void Load()
+    {
+        try
+        {
+            string data = File.ReadAllText(Application.persistentDataPath + "/test-scene.json");
+
+            scene = JsonUtility.FromJson<FlatScene>(data);
+        }
+        catch (Exception e)
+        {
+            Debug.LogFormat("Failed to load scene,");
+            Debug.LogException(e);
+        }
+    }
+
+    public void Refresh()
     {
         scene.graphics.Sort((a, b) => a.depth.CompareTo(b.depth));
-
-        graphics.SetActive(scene.graphics);
+        graphics.SetActive(scene.graphics.Where(g => !g.pinned));
         graphics.Refresh();
+        pinned.SetActive(scene.graphics.Where(g => g.pinned));
+        pinned.Refresh();
+    }
 
+    private void Update()
+    {
         if (selected != null)
         {
-            CheckTouchTransform();
+            if (!selected.pinned && pinnedToggle.isOn)
+            {
+                selected.position = worldTransform.TransformPoint(selected.position);
+                selected.direction += worldObject.direction;
+                selected.scale *= worldObject.scale;
+                selected.pinned = true;
+            }
+            else if (selected.pinned && !pinnedToggle.isOn)
+            {
+                selected.position = worldTransform.InverseTransformPoint(selected.position);
+                selected.direction -= worldObject.direction;
+                selected.scale /= worldObject.scale;
+                selected.pinned = false;
+            }
         }
 
-        CheckTouchSelect();
+        Refresh();
+
+        if (!playing)
+        {
+            layerGroup.alpha = selected != null ? 1 : 0.5f;
+            layerGroup.blocksRaycasts = selected != null;
+
+            CheckTouchTransform();
+            CheckTouchSelect();
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Save();
+                Application.Quit();
+            }
+        }
+        else
+        {
+            CheckPlayControls();
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                StopPlaying();
+            }
+        }
+
+        worldTransform.position = (Vector3) worldObject.position + Vector3.back * worldObject.depth;
+        worldTransform.localScale = worldObject.scale * Vector3.one;
+        worldTransform.localEulerAngles = worldObject.direction * Vector3.forward;
+    }
+
+    public void ResetCamera()
+    {
+        worldObject.position = Vector2.zero;
+        worldObject.scale = 1;
+        worldObject.direction = 0;
     }
 
     private IEnumerator LoadResources()
@@ -117,7 +208,9 @@ public class Main : MonoBehaviour
 
         resourceLoads.Clear();
 
-        graphics.SetActive(scene.graphics);
+        Load();
+
+        Refresh();
     }
 
     private void FindResources(string root)
@@ -156,22 +249,64 @@ public class Main : MonoBehaviour
 
         Select(graphic);
 
-        graphics.SetActive(scene.graphics);
-        graphics.Refresh();
+        Refresh();
     }
 
-    #region Selection
+    public bool playing { get; private set; }
+
+    public void StartPlaying()
+    {
+        playing = true;
+        ResetCamera();
+        Deselect();
+        Save();
+
+        toolbar.SetActive(false);
+        debug.SetActive(false);
+    }
+
+    public void StopPlaying()
+    {
+        playing = false;
+        ResetCamera();
+
+        toolbar.SetActive(true);
+        debug.SetActive(true);
+    }
+
+    #region Play Touch Controls
+    
+    public void CheckPlayControls()
+    {
+        if (Input.GetMouseButton(0))
+        {
+            Vector2 center = new Vector2(Camera.main.pixelWidth,
+                                         Camera.main.pixelHeight) * 0.5f;
+
+            Vector2 delta = (Vector2) Input.mousePosition - center;
+
+            worldObject.position -= delta * Time.deltaTime;
+        }
+    }
+    
+    #endregion
+
+    #region Editor Selection
 
     public FlatGraphic selected { get; private set; }
 
     public void Select(FlatGraphic graphic)
     {
         selected = graphic;
+        pinnedToggle.interactable = true;
+        pinnedToggle.isOn = graphic.pinned;
     }
 
     public void Deselect()
     {
         selected = null;
+        pinnedToggle.interactable = false;
+        pinnedToggle.isOn = false;
     }
 
     public void DeleteSelected()
@@ -185,7 +320,7 @@ public class Main : MonoBehaviour
 
     #endregion
 
-    #region Touch Controls
+    #region Editor Touch Controls
 
     private bool tapping;
     private Vector2 tapPosition;
@@ -235,16 +370,9 @@ public class Main : MonoBehaviour
                               .OfType<GraphicView>()
                               .FirstOrDefault();
 
-                if (hit != null)
+                if (hit != null && hit.config != prev)
                 {
-                    if (hit.config == selected)
-                    {
-                        Deselect();
-                    }
-                    else
-                    {
-                        Select(hit.config);
-                    }
+                    Select(hit.config);
                 }
             }
 
@@ -289,10 +417,18 @@ public class Main : MonoBehaviour
         bool blocked1 = creatorRayster.IsPointBlocked(nextTouch1);
         bool blocked2 = creatorRayster.IsPointBlocked(nextTouch2);
 
+        if (this.selected != null)
+        {
+            nextTouch1 = worldTransform.InverseTransformPoint(nextTouch1);
+            nextTouch2 = worldTransform.InverseTransformPoint(nextTouch2);
+        }
+
         bool touch1Begin = Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began;
         bool touch2Begin = Input.touchCount == 2 && Input.GetTouch(1).phase == TouchPhase.Began;
 
         bool touch1Move = Input.touchCount == 1;
+
+        var selected = this.selected ?? worldObject;
 
         if ((touch1Begin || mouse) && !oneFinger && !blocked1)
         {
