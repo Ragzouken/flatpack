@@ -10,6 +10,13 @@ using Random = UnityEngine.Random;
 
 using System.IO;
 
+public class RawImage
+{
+    public string name;
+    public string path;
+    public Sprite sprite;
+}
+
 public class ImageResource
 {
     public string name;
@@ -45,6 +52,9 @@ public class Main : MonoBehaviour
     private List<string> resourcePaths = new List<string>();
     private List<WWW> resourceLoads = new List<WWW>();
     public Dictionary<string, ImageResource> resources = new Dictionary<string, ImageResource>();
+
+    [SerializeField]
+    private List<string> streaming;
 
     public FlatScene scene;
 
@@ -93,8 +103,8 @@ public class Main : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogFormat("Failed to load scene,");
-            Debug.LogException(e);
+            //Debug.LogFormat("Failed to load scene,");
+            //Debug.LogException(e);
         }
     }
 
@@ -165,50 +175,74 @@ public class Main : MonoBehaviour
         worldObject.direction = 0;
     }
 
+    public IEnumerator LoadFromFile(string file)
+    {
+        return LoadFromURL("file://" + file);
+    }
+
+    public IEnumerator LoadFromURL(string url, bool save=true)
+    {
+        var load = new WWW(url);
+
+        yield return load;
+
+        var resource = new ImageResource
+        {
+            name = Path.GetFileNameWithoutExtension(load.url),
+            path = load.url,
+        };
+
+        if (save)
+        {
+            resources.Add(url, resource);
+        }
+
+        try
+        {
+            var texture = load.texture;
+
+            resource.sprite = Sprite.Create(texture,
+                                            new Rect(0, 0, texture.width, texture.height),
+                                            Vector2.zero,
+                                            100,
+                                            0,
+                                            SpriteMeshType.FullRect);
+
+            
+        }
+        catch (Exception e)
+        {
+            Debug.LogFormat("Failed to load '{0}'", url);
+            Debug.LogException(e);
+        }
+    }
+
+    public IEnumerator LoadFromSource(GraphicSource source)
+    {
+        return LoadFromFile(source.path);
+    }
+
     private IEnumerator LoadResources()
     {
-        FindResources("/storage/emulated/0/Download/");
-        FindResources("/storage/emulated/0/DCIM/");
-        FindResources("/storage/emulated/0/Pictures/");
-        FindResources("C:/Users/mark/Pictures/kooltool aesthetics");
+        Load();
 
-        loadingSlider.maxValue = resourcePaths.Count;
+        var expected = new HashSet<string>(scene.graphics.Select(g => g.graphicURI));
 
-        resourceLoads.Clear();
-        resourceLoads.AddRange(resourcePaths.Select(path => new WWW("file://" + path)));
+        loadingSlider.maxValue = expected.Count;
 
-        foreach (var load in resourceLoads)
+        foreach (string file in expected)
         {
-            yield return load;
-
-            try
+            if (file.StartsWith("jar") || file.StartsWith("file"))
             {
-                var texture = load.texture;
-                var resource = new ImageResource
-                {
-                    name = Path.GetFileNameWithoutExtension(load.url),
-                    path = load.url,
-                    sprite = Sprite.Create(texture,
-                                           new Rect(0, 0, texture.width, texture.height),
-                                           Vector2.zero,
-                                           100,
-                                           0,
-                                           SpriteMeshType.FullRect),
-                };
-
-                resources.Add(load.url, resource);
+                yield return StartCoroutine(LoadFromURL(file));
             }
-            catch (Exception e)
+            else
             {
-                Debug.LogException(e);
+                yield return StartCoroutine(LoadFromFile(file));
             }
 
             loadingSlider.value += 1;
         }
-
-        resourceLoads.Clear();
-
-        Load();
 
         Refresh();
     }
@@ -229,6 +263,21 @@ public class Main : MonoBehaviour
         }
     }
 
+    [SerializeField]
+    private Sprite failSprite;
+
+    public Sprite GetImageSprite(string uri)
+    {
+        ImageResource resource;
+
+        if (resources.TryGetValue(uri, out resource))
+        {
+            return resource.sprite;
+        }
+
+        return failSprite;
+    }
+
     public ImageResource GetImageResource(string uri)
     {
         ImageResource resource;
@@ -246,6 +295,7 @@ public class Main : MonoBehaviour
         var graphic = scene.AddNewGraphic(resource.path);
         graphic.position = new Vector2(Camera.main.pixelWidth,
                                        Camera.main.pixelHeight) * 0.5f;
+        graphic.depth = scene.graphics.Max(g => g.depth) + 0.01f;
 
         Select(graphic);
 

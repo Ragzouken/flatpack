@@ -26,7 +26,7 @@ public class GraphicView : InstanceView<FlatGraphic>
 
         image.color = (config.pinned && !main.playing) ? Color.white * 0.75f : Color.white;
 
-        image.sprite = main.GetImageResource(config.graphicURI).sprite;
+        image.sprite = main.GetImageSprite(config.graphicURI);
         image.alphaHitTestMinimumThreshold = 0.25f;
         image.SetNativeSize();
 
