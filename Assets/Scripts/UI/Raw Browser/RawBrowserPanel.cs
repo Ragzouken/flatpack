@@ -43,7 +43,7 @@ public class RawBrowserPanel : MonoBehaviour
     private Dictionary<string, GraphicSource> sources 
         = new Dictionary<string, GraphicSource>();
     
-    public void DiscoverFile(string file)
+    public IEnumerator DiscoverFile(string file)
     {
         if (!sources.ContainsKey(file))
         {
@@ -56,6 +56,8 @@ public class RawBrowserPanel : MonoBehaviour
             source.thumbnailLoad = main.StartCoroutine(LoadThumbnail(source));
 
             sources.Add(file, source);
+
+            yield return source.thumbnailLoad;
         }
     }
 
@@ -67,7 +69,7 @@ public class RawBrowserPanel : MonoBehaviour
 
         var texture = load.texture;
 
-        TextureScale.BilinearMax(texture, 64, 64);
+        TextureScale.PointMax(texture, 64, 64);
 
         source.thumbnail = Sprite.Create(texture,
                                          new Rect(0, 0, texture.width, texture.height),
@@ -79,23 +81,23 @@ public class RawBrowserPanel : MonoBehaviour
         Refresh();
     }
 
-    public void Rediscover()
+    public IEnumerator Rediscover()
     {
         string root = "/storage/emulated/0/DCIM/";
 
-        try
+        //try
         {
             string[] pngs = Directory.GetFiles(root, "*.png", SearchOption.AllDirectories);
             string[] jpgs = Directory.GetFiles(root, "*.jpg", SearchOption.AllDirectories);
 
             foreach (string file in jpgs)
             {
-                DiscoverFile(file);
+                yield return DiscoverFile(file);
             }
         }
-        catch (DirectoryNotFoundException)
+        //catch (DirectoryNotFoundException)
         {
-            Debug.LogFormat("Couldn't find \"{0}\"", root);
+          //  Debug.LogFormat("Couldn't find \"{0}\"", root);
         }
 
         Refresh();
@@ -109,7 +111,7 @@ public class RawBrowserPanel : MonoBehaviour
 
     public void OnEnable()
     {
-        Rediscover();
+        main.StartCoroutine(Rediscover());
         Refresh();
     }
 

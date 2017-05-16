@@ -83,6 +83,8 @@ public class Main : MonoBehaviour
 
     private void Start()
     {
+        Application.RequestUserAuthorization(UserAuthorization.WebCam);
+
         StartCoroutine(LoadResources());
     }
 

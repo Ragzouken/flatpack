@@ -29,6 +29,14 @@ public class TextureScale
 		ThreadedScale (tex, newWidth, newHeight, false);
 	}
  
+    public static void PointMax(Texture2D tex, int width, int height)
+    {
+        float scale = Mathf.Min(width  / (float) tex.width,
+                                height / (float) tex.height);
+
+        Point(tex, (int) (tex.width * scale), (int) (tex.height * scale));
+    }
+
 	public static void Bilinear (Texture2D tex, int newWidth, int newHeight)
     {
 		ThreadedScale (tex, newWidth, newHeight, true);

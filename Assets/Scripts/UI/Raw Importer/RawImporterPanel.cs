@@ -19,6 +19,11 @@ public class RawImporterPanel : MonoBehaviour
     [SerializeField]
     private Image sourceImage, maskImage;
 
+    [SerializeField]
+    private UnityEngine.UI.RawImage previewImage;
+
+    private WebCamTexture webcam;
+
     private Sprite image;
     private TextureByte.Sprite mask;
     private GraphicSource source;
@@ -28,7 +33,75 @@ public class RawImporterPanel : MonoBehaviour
 
     private void Awake()
     {
-        brush = TextureByte.Draw.Circle(32, 32);
+        brush = TextureByte.Draw.Circle(64, 255);
+        webcam = new WebCamTexture(512, 512, 60);
+
+        previewImage.texture = webcam;
+        webcam.Play();
+    }
+
+    public void Close()
+    {
+        if (webcam != null)
+        {
+            webcam.Stop();
+        }
+
+        gameObject.SetActive(false);
+
+        Reset();
+    }
+
+    public void Open()
+    {
+        if (webcam != null)
+        {
+            webcam.Play();
+        }
+    }
+
+    public void TakePhoto()
+    {
+        webcam.Pause();
+    }
+
+    public void RetryPhoto()
+    {
+        webcam.Play();
+    }
+
+    public void CancelPhoto()
+    {
+        Close();
+    }
+
+    public void AcceptPhoto()
+    {
+        Color32 clear = Color.clear;
+
+        var pix = webcam.GetPixels32();
+        var next = new Texture2D(webcam.width, webcam.height, TextureFormat.ARGB32, false);
+
+        /*
+        for (int i = 0; i < pix.Length; ++i)
+        {
+            if (mask.mTexture.pixels[i] > 128)
+            {
+                pix[i] = clear;
+            }
+        }
+        */
+
+        next.SetPixels32(pix);
+        
+        string root = "/storage/emulated/0/DCIM/";
+        string name = "import-test-" + Guid.NewGuid() + ".png";
+
+        System.IO.File.WriteAllBytes(root + name, next.EncodeToPNG());
+
+        main.StartCoroutine(main.LoadFromFile(root + name));
+
+        Close();
     }
 
     public void Reset()
@@ -85,16 +158,11 @@ public class RawImporterPanel : MonoBehaviour
         var texture = load.texture;
 
         TextureScale.BilinearMax(texture, 640, 640);
-        
+
         image = texture.FullSprite(pixelsPerUnit: 100);
         mask = TextureByte.Draw.GetSprite((int) image.rect.width, (int) image.rect.height);
         mask.SetPixelsPerUnit(100);
         mask.Clear(224);
-
-        for (int i = 0; i < 100; ++i)
-        {
-            mask.Blend(brush, Blend, brushPosition: IntVector2.one * (int) (256 * Random.value + 128));
-        }
 
         mask.Apply();
 
@@ -108,6 +176,64 @@ public class RawImporterPanel : MonoBehaviour
 
     public void Import()
     {
+        Color32 clear = Color.clear;
 
+        var pix = image.texture.GetPixels32();
+        var next = new Texture2D(image.texture.width, image.texture.height, TextureFormat.ARGB32, false);
+
+        for (int i = 0; i < pix.Length; ++i)
+        {
+            if (mask.mTexture.pixels[i] > 128)
+            {
+                pix[i] = clear;
+            }
+        }
+
+        next.SetPixels32(pix);
+        
+        string root = "/storage/emulated/0/DCIM/";
+        string name = "import-test-" + Guid.NewGuid() + ".png";
+
+        System.IO.File.WriteAllBytes(root + name, next.EncodeToPNG());
+
+        main.StartCoroutine(main.LoadFromFile(root + name));
+    }
+
+    private bool dragging;
+    private Vector2 prev;
+
+    private void Update()
+    {
+        return;
+
+        if (Input.GetMouseButton(0))
+        {
+            Vector2 next;
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(maskImage.rectTransform,
+                                                                    Input.mousePosition,
+                                                                    null,
+                                                                    out next);
+
+            next += new Vector2(mask.rect.width, mask.rect.height) * 0.5f;
+
+            if (dragging)
+            {
+                var sweep = TextureByte.Draw.Sweep(brush, prev, next, TextureByte.mask);
+
+                mask.Blend(sweep, Blend);
+                mask.Apply();
+
+                TextureByte.Draw.FreeSprite(sweep);
+            }
+
+            prev = next;
+
+            dragging = true;
+        }
+        else
+        {
+            dragging = false;
+        }
     }
 }
