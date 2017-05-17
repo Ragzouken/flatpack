@@ -85,9 +85,9 @@ public class RawImporterPanel : MonoBehaviour
 
     public void RetryPhoto()
     {
-        webcam.Play();
+        Reset();
 
-        maskImage.gameObject.SetActive(false);
+        webcam.Play();
 
         acceptButton.interactable = false;
         captureButton.interactable = true;
@@ -134,9 +134,12 @@ public class RawImporterPanel : MonoBehaviour
 
         }
 
+        maskImage.gameObject.SetActive(false);
+
         if (mask != null)
         {
             TextureByte.Draw.FreeSprite(mask);
+            mask = null;
         }
     }
 
