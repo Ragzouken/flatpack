@@ -219,11 +219,6 @@ public class Main : MonoBehaviour
         }
     }
 
-    public IEnumerator LoadFromSource(GraphicSource source)
-    {
-        return LoadFromFile(source.path);
-    }
-
     private IEnumerator LoadResources()
     {
         Load();

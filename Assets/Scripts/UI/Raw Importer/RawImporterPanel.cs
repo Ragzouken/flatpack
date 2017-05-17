@@ -36,7 +36,6 @@ public class RawImporterPanel : MonoBehaviour
 
     private Sprite image;
     private TextureByte.Sprite mask;
-    private GraphicSource source;
     private Coroutine loading;
 
     private TextureByte.Sprite brush;
@@ -130,12 +129,7 @@ public class RawImporterPanel : MonoBehaviour
 
     public void Reset()
     {
-        if (loading != null)
-        {
-
-        }
-
-        if (source != null)
+        if (webcam != null)
         {
 
         }
@@ -144,19 +138,6 @@ public class RawImporterPanel : MonoBehaviour
         {
             TextureByte.Draw.FreeSprite(mask);
         }
-
-        source = null;
-    }
-
-    public void OpenSource(GraphicSource source)
-    {
-        Reset();
-
-        this.source = source;
-
-        loading = main.StartCoroutine(LoadSource());
-
-        
     }
 
     private static byte Blend(byte canvas, byte brush)
@@ -169,33 +150,6 @@ public class RawImporterPanel : MonoBehaviour
         {
             return 0;
         }
-    }
-
-    private IEnumerator LoadSource()
-    {
-        loadingBlocker.SetActive(true);
-
-        var load = new WWW("file://" + source.path);
-
-        yield return load;
-
-        var texture = load.texture;
-
-        TextureScale.BilinearMax(texture, 640, 640);
-
-        image = texture.FullSprite(pixelsPerUnit: 100);
-        mask = TextureByte.Draw.GetSprite((int) image.rect.width, (int) image.rect.height);
-        mask.SetPixelsPerUnit(100);
-        mask.Clear(224);
-
-        mask.Apply();
-
-        sourceImage.sprite = image;
-        sourceImage.SetNativeSize();
-        maskImage.sprite = mask.uSprite;
-        maskImage.SetNativeSize();
-
-        loadingBlocker.SetActive(false);
     }
 
     public void Import()
