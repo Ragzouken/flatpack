@@ -450,6 +450,7 @@ public class Main : MonoBehaviour
         Vector2 nextTouch2 = Vector2.zero;
 
         bool mouse = false;
+        bool mouseBegin = Input.GetMouseButtonDown(0);
 
         if (Input.touchCount > 0)
         {
@@ -482,7 +483,7 @@ public class Main : MonoBehaviour
 
         var selected = this.selected ?? worldObject;
 
-        if ((touch1Begin || mouse) && !oneFinger && !blocked1)
+        if ((touch1Begin || mouseBegin) && !oneFinger && !blocked1)
         {
             prevTouch1 = nextTouch1;
             basePosition = selected.position;

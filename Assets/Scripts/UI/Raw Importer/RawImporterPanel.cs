@@ -13,6 +13,16 @@ public class RawImporterPanel : MonoBehaviour
     [SerializeField]
     private Main main;
 
+    [Header("Buttons")]
+    [SerializeField]
+    private Button captureButton;
+    [SerializeField]
+    private Button retryButton;
+    [SerializeField]
+    private Button acceptButton;
+    [SerializeField]
+    private Button cancelButton;
+
     [SerializeField]
     private GameObject loadingBlocker;
 
@@ -37,7 +47,6 @@ public class RawImporterPanel : MonoBehaviour
         webcam = new WebCamTexture(512, 512, 60);
 
         previewImage.texture = webcam;
-        webcam.Play();
     }
 
     public void Close()
@@ -52,22 +61,37 @@ public class RawImporterPanel : MonoBehaviour
         Reset();
     }
 
-    public void Open()
+    private void OnEnable()
     {
-        if (webcam != null)
-        {
-            webcam.Play();
-        }
+        RetryPhoto();
     }
 
     public void TakePhoto()
     {
         webcam.Pause();
+
+        maskImage.gameObject.SetActive(true);
+
+        mask = TextureByte.Draw.GetSprite(webcam.width, webcam.height);
+        mask.SetPixelsPerUnit(100);
+        mask.Clear(224);
+
+        mask.Apply();
+        maskImage.sprite = mask.uSprite;
+        //maskImage.SetNativeSize();
+
+        acceptButton.interactable = true;
+        captureButton.interactable = false;
     }
 
     public void RetryPhoto()
     {
         webcam.Play();
+
+        maskImage.gameObject.SetActive(false);
+
+        acceptButton.interactable = false;
+        captureButton.interactable = true;
     }
 
     public void CancelPhoto()
@@ -82,7 +106,6 @@ public class RawImporterPanel : MonoBehaviour
         var pix = webcam.GetPixels32();
         var next = new Texture2D(webcam.width, webcam.height, TextureFormat.ARGB32, false);
 
-        /*
         for (int i = 0; i < pix.Length; ++i)
         {
             if (mask.mTexture.pixels[i] > 128)
@@ -90,12 +113,13 @@ public class RawImporterPanel : MonoBehaviour
                 pix[i] = clear;
             }
         }
-        */
 
         next.SetPixels32(pix);
-        
-        string root = "/storage/emulated/0/DCIM/";
+
+        string root = Application.persistentDataPath + "/imported/";
         string name = "import-test-" + Guid.NewGuid() + ".png";
+
+        System.IO.Directory.CreateDirectory(root);
 
         System.IO.File.WriteAllBytes(root + name, next.EncodeToPNG());
 
@@ -204,7 +228,10 @@ public class RawImporterPanel : MonoBehaviour
 
     private void Update()
     {
-        return;
+        if (mask == null)
+        {
+            return;
+        }
 
         if (Input.GetMouseButton(0))
         {
@@ -215,7 +242,10 @@ public class RawImporterPanel : MonoBehaviour
                                                                     null,
                                                                     out next);
 
-            next += new Vector2(mask.rect.width, mask.rect.height) * 0.5f;
+            next += new Vector2(maskImage.rectTransform.rect.width, maskImage.rectTransform.rect.height) * 0.5f;
+
+            next.x = (next.x / maskImage.rectTransform.rect.width) * webcam.width;
+            next.y = (next.y / maskImage.rectTransform.rect.height) * webcam.height;
 
             if (dragging)
             {
