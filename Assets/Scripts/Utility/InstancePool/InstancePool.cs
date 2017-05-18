@@ -92,7 +92,7 @@ public abstract class InstancePool<TConfig, TInstance>
 
     public void SetActive(params TConfig[] configs)
     {
-        SetActive(configs);
+        SetActive(configs as IEnumerable<TConfig>);
     }
 
     private bool locked;

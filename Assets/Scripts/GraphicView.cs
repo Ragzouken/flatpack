@@ -30,8 +30,11 @@ public class GraphicView : InstanceView<FlatGraphic>
         image.alphaHitTestMinimumThreshold = 0.25f;
         image.SetNativeSize();
 
+        Vector3 scale = config.scale * Vector3.one * (selected ? Mathf.Lerp(0.975f, 1.025f, u) : 1);
+        scale.z = 1;
+
         transform.localPosition = (Vector3) config.position + Vector3.back * config.depth;
-        transform.localScale = config.scale * Vector3.one * (selected ? Mathf.Lerp(0.975f, 1.025f, u) : 1);
+        transform.localScale = scale;
         transform.localEulerAngles = config.direction * Vector3.forward;
     }
 }

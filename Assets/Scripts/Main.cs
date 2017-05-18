@@ -32,6 +32,9 @@ public class Main : MonoBehaviour
     public GraphicRaycaster creatorRayster;
 
     [SerializeField]
+    private CanvasGroup selectionGroup;
+
+    [SerializeField]
     private UIDragControl layerDrag;
     [SerializeField]
     private CanvasGroup layerGroup;
@@ -52,9 +55,6 @@ public class Main : MonoBehaviour
     private List<string> resourcePaths = new List<string>();
     private List<WWW> resourceLoads = new List<WWW>();
     public Dictionary<string, ImageResource> resources = new Dictionary<string, ImageResource>();
-
-    [SerializeField]
-    private List<string> streaming;
 
     public FlatScene scene;
 
@@ -95,7 +95,7 @@ public class Main : MonoBehaviour
         File.WriteAllText(Application.persistentDataPath + "/test-scene.json", data);
     }
 
-    public void Load()
+    public void Load(string id)
     {
         try
         {
@@ -121,6 +121,8 @@ public class Main : MonoBehaviour
 
     private void Update()
     {
+        selectionGroup.interactable = selected != null;
+
         if (selected != null)
         {
             if (!selected.pinned && pinnedToggle.isOn)
@@ -210,7 +212,7 @@ public class Main : MonoBehaviour
                                             0,
                                             SpriteMeshType.FullRect);
 
-            
+            graphicsBrowser.Refresh();
         }
         catch (Exception e)
         {
@@ -221,7 +223,7 @@ public class Main : MonoBehaviour
 
     private IEnumerator LoadResources()
     {
-        Load();
+        Load("");
 
         var expected = new HashSet<string>(scene.graphics.Select(g => g.graphicURI));
 
@@ -354,6 +356,53 @@ public class Main : MonoBehaviour
         selected = null;
         pinnedToggle.interactable = false;
         pinnedToggle.isOn = false;
+    }
+
+    public void SendSelectedForward()
+    {
+        var objects = scene.graphics.OrderByDescending(o => o.depth).ToList();
+
+        if (selected != null)
+        {
+            int index = objects.IndexOf(selected);
+
+            if (index >= 2)
+            {
+                selected.depth = Mathf.Lerp(objects[index - 2].depth, objects[index - 1].depth, 0.5f);
+            }
+            else if (index >= 1)
+            {
+                selected.depth = objects[0].depth + 100;
+            }
+            else
+            {
+                selected.depth += 100;
+            }
+        }
+    }
+
+    public void SendSelectedBack()
+    {
+        var objects = scene.graphics.OrderByDescending(o => o.depth).ToList();
+
+        if (selected != null)
+        {
+            int index = objects.IndexOf(selected);
+            int count = objects.Count;
+
+            if (count - index - 1 >= 2)
+            {
+                selected.depth = Mathf.Lerp(objects[index + 2].depth, objects[index + 1].depth, 0.5f);
+            }
+            else if (count - index - 1 >= 1)
+            {
+                selected.depth = objects[count - 1].depth - 100;
+            }
+            else
+            {
+                selected.depth -= 100;
+            }
+        }
     }
 
     public void DeleteSelected()

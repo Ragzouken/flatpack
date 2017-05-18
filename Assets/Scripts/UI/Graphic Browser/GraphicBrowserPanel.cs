@@ -19,11 +19,26 @@ public class GraphicBrowserPanel : MonoBehaviour
 
     private void Awake()
     {
-        thumbnails = thumbnailsSetup.Finalise<ImageResource>();
+        Initialise();
+    }
+
+    private void Initialise()
+    {
+        if (thumbnails == null)
+        {
+            thumbnails = thumbnailsSetup.Finalise<ImageResource>();
+        }
     }
 
     public void OnEnable()
     {
+        Refresh();
+    }
+
+    public void Refresh()
+    {
+        Initialise();
+
         thumbnails.SetActive(main.resources.Values);
     }
 
