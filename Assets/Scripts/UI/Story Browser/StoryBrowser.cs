@@ -26,17 +26,6 @@ public class StoryBrowser : MonoBehaviour
     {
         Saves.RefreshBlurbs();
 
-        if (Saves.blurbs.Count == 0)
-        {
-            Saves.CreateStory("je suis un ananas");
-            Saves.CreateStory("un ananas ne parle pas");
-            Saves.CreateStory("incroyable, c'est pas possible!");
-            Saves.CreateStory("c'est possible");
-            Saves.CreateStory("musiksagen vom brandonhugel");
-            Saves.CreateStory("somewhere i return");
-            Saves.RefreshBlurbs();
-        }
-
         var blurbs = Saves.blurbs.Values.OrderByDescending(blurb => blurb.modified).ToList();
 
         thumbnails.SetActive(blurbs);
