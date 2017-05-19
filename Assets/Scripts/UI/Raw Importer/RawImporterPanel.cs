@@ -33,8 +33,7 @@ public class RawImporterPanel : MonoBehaviour
     private UnityEngine.UI.RawImage previewImage;
 
     private WebCamTexture webcam;
-
-    private Sprite image;
+    
     private TextureByte.Sprite mask;
     private Coroutine loading;
 
@@ -153,31 +152,6 @@ public class RawImporterPanel : MonoBehaviour
         {
             return 0;
         }
-    }
-
-    public void Import()
-    {
-        Color32 clear = Color.clear;
-
-        var pix = image.texture.GetPixels32();
-        var next = new Texture2D(image.texture.width, image.texture.height, TextureFormat.ARGB32, false);
-
-        for (int i = 0; i < pix.Length; ++i)
-        {
-            if (mask.mTexture.pixels[i] > 128)
-            {
-                pix[i] = clear;
-            }
-        }
-
-        next.SetPixels32(pix);
-        
-        string root = "/storage/emulated/0/DCIM/";
-        string name = "import-test-" + Guid.NewGuid() + ".png";
-
-        System.IO.File.WriteAllBytes(root + name, next.EncodeToPNG());
-
-        main.StartCoroutine(main.LoadFromFile(root + name));
     }
 
     private bool dragging;

@@ -53,7 +53,6 @@ public class Main : MonoBehaviour
     private InstancePool<FlatGraphic> pinned;
 
     private List<string> resourcePaths = new List<string>();
-    private List<WWW> resourceLoads = new List<WWW>();
     public Dictionary<string, ImageResource> resources = new Dictionary<string, ImageResource>();
 
     public FlatScene scene;
@@ -545,7 +544,7 @@ public class Main : MonoBehaviour
         else if (Input.touchCount == 2 && twoFinger)
         {
             Vector2 a = prevTouch1 - basePosition;
-            Vector2 b = prevTouch2 - basePosition;
+            //Vector2 b = prevTouch2 - basePosition;
             Vector2 c = prevTouch2 - prevTouch1;
 
             float prevD = (prevTouch2 - prevTouch1).magnitude;
