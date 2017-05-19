@@ -8,13 +8,7 @@ using System.Collections.Generic;
 
 using Random = UnityEngine.Random;
 
-public class Story
-{
-    public string name;
-    public string path;
-}
-
-public class StoryThumbnail : InstanceView<Story>
+public class StoryThumbnail : InstanceView<FlatBlurb>
 {
     [SerializeField]
     private StoryBrowser browser;

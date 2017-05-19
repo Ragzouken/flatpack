@@ -84,30 +84,21 @@ public class Main : MonoBehaviour
     private void Start()
     {
         Application.RequestUserAuthorization(UserAuthorization.WebCam);
-
-        StartCoroutine(LoadResources());
     }
+
+    private FlatStory story;
 
     public void Save()
     {
-        string data = JsonUtility.ToJson(scene);
-
-        File.WriteAllText(Application.persistentDataPath + "/test-scene.json", data);
+        Saves.SaveStory(story);
     }
 
-    public void Load(string id)
+    public void SetStory(FlatStory story)
     {
-        try
-        {
-            string data = File.ReadAllText(Application.persistentDataPath + "/test-scene.json");
+        this.story = story;
+        scene = story.scene;
 
-            scene = JsonUtility.FromJson<FlatScene>(data);
-        }
-        catch (Exception e)
-        {
-            //Debug.LogFormat("Failed to load scene,");
-            //Debug.LogException(e);
-        }
+        StartCoroutine(LoadResources());
     }
 
     public void Refresh()
@@ -150,12 +141,6 @@ public class Main : MonoBehaviour
 
             CheckTouchTransform();
             CheckTouchSelect();
-
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                Save();
-                Application.Quit();
-            }
         }
         else
         {
@@ -186,6 +171,11 @@ public class Main : MonoBehaviour
 
     public IEnumerator LoadFromURL(string url, bool save=true)
     {
+        if (resources.ContainsKey(url))
+        {
+            yield break;
+        }
+
         var load = new WWW(url);
 
         yield return load;
@@ -223,8 +213,6 @@ public class Main : MonoBehaviour
 
     private IEnumerator LoadResources()
     {
-        Load("");
-
         var expected = new HashSet<string>(scene.graphics.Select(g => g.graphicURI));
 
         loadingSlider.maxValue = expected.Count;

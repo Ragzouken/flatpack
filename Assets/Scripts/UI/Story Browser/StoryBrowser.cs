@@ -15,25 +15,44 @@ public class StoryBrowser : MonoBehaviour
 
     [SerializeField]
     private InstancePoolSetup thumbnailsSetup;
-    private InstancePool<Story> thumbnails;
+    private InstancePool<FlatBlurb> thumbnails;
 
     private void Awake()
     {
-        thumbnails = thumbnailsSetup.Finalise<Story>();
+        thumbnails = thumbnailsSetup.Finalise<FlatBlurb>();
     }
 
     private void Start()
     {
-        thumbnails.SetActive(new Story { name = "je suis un ananas" },
-                             new Story { name = "un ananas ne parle pas" },
-                             new Story { name = "incroyable, c'est pas possible!" },
-                             new Story { name = "c'est possible" },
-                             new Story { name = "musiksagen vom brandonhugel" },
-                             new Story { name = "somewhere i return" });
+        Saves.RefreshBlurbs();
+
+        if (Saves.blurbs.Count == 0)
+        {
+            Saves.CreateStory("je suis un ananas");
+            Saves.CreateStory("un ananas ne parle pas");
+            Saves.CreateStory("incroyable, c'est pas possible!");
+            Saves.CreateStory("c'est possible");
+            Saves.CreateStory("musiksagen vom brandonhugel");
+            Saves.CreateStory("somewhere i return");
+            Saves.RefreshBlurbs();
+        }
+
+        var blurbs = Saves.blurbs.Values.OrderByDescending(blurb => blurb.modified).ToList();
+
+        thumbnails.SetActive(blurbs);
     }
 
-    public void OpenStory(Story story)
+    public void CreateStory()
     {
+
+    }
+
+    public void OpenStory(FlatBlurb blurb)
+    {
+        var story = Saves.LoadStory(blurb);
+
+        main.SetStory(story);
+
         gameObject.SetActive(false);
     }
 }
