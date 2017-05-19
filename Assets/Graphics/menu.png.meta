@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 92eec33997340c44182488d114441b12
-timeCreated: 1495040060
+guid: 1301b773584c00d45ab59326de50adb2
+timeCreated: 1495221326
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName: {}
@@ -27,7 +27,7 @@ TextureImporter:
   textureFormat: 1
   maxTextureSize: 2048
   textureSettings:
-    filterMode: 1
+    filterMode: -1
     aniso: -1
     mipBias: -1
     wrapMode: 1
@@ -40,7 +40,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 500
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
@@ -85,43 +85,7 @@ TextureImporter:
   spriteSheet:
     serializedVersion: 2
     sprites: []
-    outline:
-    - - {x: -20.234375, y: -311.72726}
-      - {x: -20.234375, y: -317.5}
-      - {x: -2.890625, y: -317.5}
-      - {x: -2.890625, y: -314.61362}
-      - {x: -11.5625, y: -305.95453}
-      - {x: -14.453125, y: -305.95453}
-    - - {x: 254.375, y: 222.24998}
-      - {x: 153.20312, y: 288.63635}
-      - {x: 89.609375, y: 308.8409}
-      - {x: -167.65625, y: 308.8409}
-      - {x: -245.70312, y: 279.97726}
-      - {x: -309.29688, y: 115.454544}
-      - {x: -320.85938, y: 46.181816}
-      - {x: -320.85938, y: -112.56818}
-      - {x: -317.96875, y: -126.99999}
-      - {x: -167.65625, y: -282.86362}
-      - {x: -49.140625, y: -314.61362}
-      - {x: 104.0625, y: -314.61362}
-      - {x: 211.01562, y: -271.31818}
-      - {x: 268.82812, y: -219.36363}
-      - {x: 346.875, y: -98.13636}
-      - {x: 346.875, y: 54.840908}
-    - - {x: 323.75, y: 155.86363}
-      - {x: 317.96875, y: 150.0909}
-      - {x: 317.96875, y: 144.31818}
-      - {x: 323.75, y: 138.54546}
-      - {x: 329.53125, y: 138.54546}
-      - {x: 335.3125, y: 144.31818}
-      - {x: 335.3125, y: 150.0909}
-      - {x: 329.53125, y: 155.86363}
-    - - {x: -5.78125, y: 317.5}
-      - {x: -5.78125, y: 303.06818}
-      - {x: -2.890625, y: 300.1818}
-      - {x: 8.671875, y: 300.1818}
-      - {x: 11.5625, y: 305.95453}
-      - {x: 11.5625, y: 317.5}
+    outline: []
   spritePackingTag: ui
   userData: 
   assetBundleName: 

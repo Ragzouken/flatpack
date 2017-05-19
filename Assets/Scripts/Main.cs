@@ -82,6 +82,11 @@ public class Main : MonoBehaviour
         Application.RequestUserAuthorization(UserAuthorization.WebCam);
     }
 
+    public void Exit()
+    {
+        Application.Quit();
+    }
+
     private FlatStory story;
 
     public void CreateFromInput()

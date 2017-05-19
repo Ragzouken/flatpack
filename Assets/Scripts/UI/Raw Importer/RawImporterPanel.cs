@@ -23,8 +23,11 @@ public class RawImporterPanel : MonoBehaviour
     [SerializeField]
     private Button cancelButton;
 
+    [Header("Prompts")]
     [SerializeField]
-    private GameObject loadingBlocker;
+    private GameObject capturePrompt;
+    [SerializeField]
+    private GameObject scrubPrompt;
 
     [SerializeField]
     private Image sourceImage, maskImage;
@@ -80,6 +83,8 @@ public class RawImporterPanel : MonoBehaviour
 
         acceptButton.interactable = true;
         captureButton.interactable = false;
+        capturePrompt.SetActive(false);
+        scrubPrompt.SetActive(true);
     }
 
     public void RetryPhoto()
@@ -90,6 +95,7 @@ public class RawImporterPanel : MonoBehaviour
 
         acceptButton.interactable = false;
         captureButton.interactable = true;
+        capturePrompt.SetActive(true);
     }
 
     public void CancelPhoto()
@@ -128,6 +134,9 @@ public class RawImporterPanel : MonoBehaviour
 
     public void Reset()
     {
+        capturePrompt.SetActive(false);
+        scrubPrompt.SetActive(false);
+
         if (webcam != null)
         {
 
