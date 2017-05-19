@@ -86,6 +86,8 @@ public static class Saves
 
         SaveStory(story);
 
+        blurbs[id] = story.blurb;
+
         return story;
     }
 

@@ -22,7 +22,7 @@ public class StoryBrowser : MonoBehaviour
         thumbnails = thumbnailsSetup.Finalise<FlatBlurb>();
     }
 
-    private void Start()
+    private void OnEnable()
     {
         Saves.RefreshBlurbs();
 

@@ -35,7 +35,7 @@ public class Main : MonoBehaviour
     private CanvasGroup selectionGroup;
 
     [SerializeField]
-    private UIDragControl layerDrag;
+    private InputField storyNameInput;
     [SerializeField]
     private CanvasGroup layerGroup;
     [SerializeField]
@@ -75,9 +75,6 @@ public class Main : MonoBehaviour
     {
         graphics = graphicsSetup.Finalise<FlatGraphic>();
         pinned = pinnedSetup.Finalise<FlatGraphic>();
-
-        layerDrag.OnBegin += () => prevDepth = selected.depth;
-        layerDrag.OnDrag += displacement => selected.depth = prevDepth + displacement.y * 0.01f;
     }
 
     private void Start()
@@ -86,6 +83,13 @@ public class Main : MonoBehaviour
     }
 
     private FlatStory story;
+
+    public void CreateFromInput()
+    {
+        var story = Saves.CreateStory(storyNameInput.text);
+
+        SetStory(story);
+    }
 
     public void Save()
     {
@@ -135,9 +139,6 @@ public class Main : MonoBehaviour
 
         if (!playing)
         {
-            layerGroup.alpha = selected != null ? 1 : 0.5f;
-            layerGroup.blocksRaycasts = selected != null;
-
             CheckTouchTransform();
             CheckTouchSelect();
         }
