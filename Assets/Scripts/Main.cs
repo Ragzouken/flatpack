@@ -106,6 +106,7 @@ public class Main : MonoBehaviour
         this.story = story;
         scene = story.scene;
 
+        loading = true;
         StartCoroutine(LoadResources());
     }
 
@@ -118,8 +119,15 @@ public class Main : MonoBehaviour
         pinned.Refresh();
     }
 
+    private bool loading = true;
+
     private void Update()
     {
+        if (loading)
+        {
+            return;
+        }
+
         selectionGroup.interactable = selected != null;
 
         if (selected != null)
@@ -193,7 +201,7 @@ public class Main : MonoBehaviour
 
     public IEnumerator LoadFromImported(string id)
     {
-        return LoadFromURL("file://" + Application.persistentDataPath + "/imported/" + id + ".png");
+        return LoadFromURL("file://" + Application.persistentDataPath + "/imported/" + id + ".png", id: id);
     }
 
     public IEnumerator LoadFromFile(string file)
@@ -201,7 +209,7 @@ public class Main : MonoBehaviour
         return LoadFromURL("file://" + file);
     }
 
-    public IEnumerator LoadFromURL(string url, bool save=true)
+    public IEnumerator LoadFromURL(string url, bool save=true, string id="")
     {
         if (resources.ContainsKey(url))
         {
@@ -221,6 +229,11 @@ public class Main : MonoBehaviour
         if (save)
         {
             resources.Add(url, resource);
+
+            if (id != "")
+            {
+                resources.Add(id, resource);
+            }
         }
 
         try
@@ -245,6 +258,8 @@ public class Main : MonoBehaviour
 
     private IEnumerator LoadResources()
     {
+        loading = true;
+
         var expected = new HashSet<string>(scene.graphics.Select(g => g.graphicURI));
         expected.UnionWith(story.graphics);
 
@@ -265,22 +280,8 @@ public class Main : MonoBehaviour
         }
 
         Refresh();
-    }
 
-    private void FindResources(string root)
-    {
-        try
-        {
-            string[] pngs = Directory.GetFiles(root, "*.png", SearchOption.AllDirectories);
-            string[] jpgs = Directory.GetFiles(root, "*.jpg", SearchOption.AllDirectories);
-
-            resourcePaths.AddRange(pngs);
-            resourcePaths.AddRange(jpgs);
-        }
-        catch (DirectoryNotFoundException)
-        {
-            Debug.LogFormat("Couldn't find \"{0}\"", root);
-        }
+        loading = false;
     }
 
     [SerializeField]
