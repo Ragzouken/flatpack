@@ -29,6 +29,7 @@ public class StoryBrowser : MonoBehaviour
         var blurbs = Saves.blurbs.Values.OrderByDescending(blurb => blurb.modified).ToList();
 
         thumbnails.SetActive(blurbs);
+        thumbnails.Refresh();
     }
 
     public void CreateStory()

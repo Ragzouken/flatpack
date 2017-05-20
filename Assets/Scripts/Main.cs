@@ -169,6 +169,33 @@ public class Main : MonoBehaviour
         worldObject.direction = 0;
     }
 
+    public void InsertImported(string id, Texture2D texture)
+    {
+        var resource = new ImageResource
+        {
+            name = id,
+            path = id,
+        };
+
+        resource.sprite = Sprite.Create(texture,
+                                        new Rect(0, 0, texture.width, texture.height),
+                                        Vector2.zero,
+                                        100,
+                                        0,
+                                        SpriteMeshType.FullRect);
+
+        resources.Add(id, resource);
+
+        story.graphics.Add(id);
+
+        graphicsBrowser.Refresh();
+    }
+
+    public IEnumerator LoadFromImported(string id)
+    {
+        return LoadFromURL("file://" + Application.persistentDataPath + "/imported/" + id + ".png");
+    }
+
     public IEnumerator LoadFromFile(string file)
     {
         return LoadFromURL("file://" + file);
@@ -219,6 +246,7 @@ public class Main : MonoBehaviour
     private IEnumerator LoadResources()
     {
         var expected = new HashSet<string>(scene.graphics.Select(g => g.graphicURI));
+        expected.UnionWith(story.graphics);
 
         loadingSlider.maxValue = expected.Count;
 
@@ -230,7 +258,7 @@ public class Main : MonoBehaviour
             }
             else
             {
-                yield return StartCoroutine(LoadFromFile(file));
+                yield return StartCoroutine(LoadFromImported(file));
             }
 
             loadingSlider.value += 1;

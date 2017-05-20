@@ -14,6 +14,7 @@ public class FlatBlurb
     [NonSerialized]
     public string id;
     public string name;
+    public int graphics = -1;
     public DateTime modified;
 }
 
@@ -22,6 +23,7 @@ public class FlatStory
     [NonSerialized]
     public FlatBlurb blurb;
     public FlatScene scene;
+    public List<string> graphics = new List<string>();
 }
 
 public static class Saves 
@@ -80,7 +82,7 @@ public static class Saves
 
         var story = new FlatStory
         {
-            blurb = new FlatBlurb { id = id, name = name },
+            blurb = new FlatBlurb { id = id, name = name, graphics = 0 },
             scene = new FlatScene(),
         };
 
@@ -98,6 +100,13 @@ public static class Saves
         string blurbPath = Path.Combine(folder, "blurb.json");
         string storyPath = Path.Combine(folder, "story.json");
 
+        var graphics = new HashSet<string>(story.graphics);
+        graphics.UnionWith(story.scene.graphics.Select(g => g.graphicURI));
+
+        story.graphics.Clear();
+        story.graphics.AddRange(graphics);
+
+        story.blurb.graphics = story.graphics.Count;
         story.blurb.modified = DateTime.UtcNow;
 
         File.WriteAllText(blurbPath, JsonUtility.ToJson(story.blurb));

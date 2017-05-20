@@ -119,15 +119,17 @@ public class RawImporterPanel : MonoBehaviour
         }
 
         next.SetPixels32(pix);
+        next.Apply();
 
+        string id = Guid.NewGuid().ToString();
         string root = Application.persistentDataPath + "/imported/";
-        string name = "import-test-" + Guid.NewGuid() + ".png";
+        string name = id + ".png";
 
         System.IO.Directory.CreateDirectory(root);
-
         System.IO.File.WriteAllBytes(root + name, next.EncodeToPNG());
 
-        main.StartCoroutine(main.LoadFromFile(root + name));
+        main.InsertImported(id, next);
+        main.Save();
 
         Close();
     }

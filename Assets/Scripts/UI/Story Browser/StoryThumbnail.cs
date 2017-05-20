@@ -25,6 +25,6 @@ public class StoryThumbnail : InstanceView<FlatBlurb>
 
     public override void Refresh()
     {
-        titleText.text = config.name;
+        titleText.text = string.Format("{0}\n<size=42>({1} pictures)</size>", config.name, config.graphics);
     }
 }
