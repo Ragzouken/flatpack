@@ -8,7 +8,6 @@ using System.Collections.Generic;
 
 using Random = UnityEngine.Random;
 using System.IO;
-using System.Globalization;
 
 public class FlatBlurb
 {
@@ -135,7 +134,7 @@ public static class Saves
     {
         string root;
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
         root = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #elif UNITY_ANDROID
         root = "/sdcard/Download";
@@ -145,8 +144,6 @@ public static class Saves
 #endif
 
         root = Path.Combine(root, "Flatpack Exports");
-        
-        //string time = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture);
         string name = Sanitize(story.blurb.name);
         string folder = Path.Combine(root, name);
 
