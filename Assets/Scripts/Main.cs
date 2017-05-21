@@ -10,17 +10,9 @@ using Random = UnityEngine.Random;
 
 using System.IO;
 
-public class RawImage
-{
-    public string name;
-    public string path;
-    public Sprite sprite;
-}
-
 public class ImageResource
 {
-    public string name;
-    public string path;
+    public string id;
     public Sprite sprite;
 }
 
@@ -183,8 +175,7 @@ public class Main : MonoBehaviour
     {
         var resource = new ImageResource
         {
-            name = id,
-            path = id,
+            id = id,
         };
 
         resource.sprite = Sprite.Create(texture,
@@ -224,8 +215,7 @@ public class Main : MonoBehaviour
 
         var resource = new ImageResource
         {
-            name = Path.GetFileNameWithoutExtension(load.url),
-            path = load.url,
+            id = id,
         };
 
         if (id != "")
@@ -301,7 +291,7 @@ public class Main : MonoBehaviour
 
     public void CreateGraphic(ImageResource resource)
     {
-        var graphic = scene.AddNewGraphic(resource.path);
+        var graphic = scene.AddNewGraphic(resource.id);
         graphic.position = new Vector2(Camera.main.pixelWidth,
                                        Camera.main.pixelHeight) * 0.5f;
         graphic.depth = scene.graphics.Max(g => g.depth) + 0.01f;
