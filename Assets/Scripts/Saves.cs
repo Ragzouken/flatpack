@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 using Random = UnityEngine.Random;
 using System.IO;
+using System.Globalization;
 
 public class FlatBlurb
 {
@@ -42,6 +43,11 @@ public static class Saves
     public static string Sanitize(string name)
     {
         return string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
+    }
+
+    public static string GetGraphicPath(string id)
+    {
+        return Application.persistentDataPath + "/imported/" + id + ".png";
     }
 
     public static void RefreshBlurbs()
@@ -93,9 +99,9 @@ public static class Saves
         return story;
     }
 
-    public static void SaveStory(FlatStory story)
+    public static void SaveStory(FlatStory story, string location = null)
     {
-        string folder = Path.Combine(root, story.blurb.id);
+        string folder = location ?? Path.Combine(root, story.blurb.id);
         Directory.CreateDirectory(folder);
         string blurbPath = Path.Combine(folder, "blurb.json");
         string storyPath = Path.Combine(folder, "story.json");
@@ -123,5 +129,41 @@ public static class Saves
         story.blurb = blurb;
 
         return story;
+    }
+
+    public static void ExportStory(FlatStory story)
+    {
+        string root;
+
+#if UNITY_EDITOR
+        root = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+#elif UNITY_ANDROID
+        root = "/sdcard/Download";
+#else
+        Debug.Log("Export not supported on this platform!");
+        return;
+#endif
+
+        root = Path.Combine(root, "Flatpack Exports");
+        
+        //string time = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture);
+        string name = Sanitize(story.blurb.name);
+        string folder = Path.Combine(root, name);
+
+        Directory.CreateDirectory(folder);
+
+        foreach (string id in story.graphics)
+        {
+            if (id.StartsWith("file:"))
+            {
+                Debug.LogWarningFormat("Can't export old style file: {0}", id);
+            }
+            else
+            {
+                File.Copy(GetGraphicPath(id), folder + "/" + id + ".png", true);
+            }
+        }
+
+        SaveStory(story, location: folder);
     }
 }

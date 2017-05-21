@@ -228,14 +228,9 @@ public class Main : MonoBehaviour
             path = load.url,
         };
 
-        if (save)
+        if (id != "")
         {
-            resources.Add(url, resource);
-
-            if (id != "")
-            {
-                resources.Add(id, resource);
-            }
+            resources.Add(id, resource);
         }
 
         try
@@ -265,6 +260,7 @@ public class Main : MonoBehaviour
 
         var expected = new HashSet<string>(scene.graphics.Select(g => g.graphicURI));
         expected.UnionWith(story.graphics);
+        expected.ExceptWith(resources.Keys);
 
         loadingSlider.maxValue = expected.Count;
 
@@ -272,7 +268,7 @@ public class Main : MonoBehaviour
         {
             if (file.StartsWith("jar") || file.StartsWith("file"))
             {
-                yield return StartCoroutine(LoadFromURL(file));
+                Debug.LogErrorFormat("Legacy story file no longer supported :(");
             }
             else
             {
