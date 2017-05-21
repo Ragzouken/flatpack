@@ -42,6 +42,8 @@ public class Main : MonoBehaviour
     private GraphicBrowserPanel graphicsBrowser;
 
     [SerializeField]
+    private GameObject loadingBlocker;
+    [SerializeField]
     private Slider loadingSlider;
 
     [SerializeField]
@@ -258,6 +260,7 @@ public class Main : MonoBehaviour
 
     private IEnumerator LoadResources()
     {
+        loadingBlocker.SetActive(true);
         loading = true;
 
         var expected = new HashSet<string>(scene.graphics.Select(g => g.graphicURI));
@@ -282,6 +285,7 @@ public class Main : MonoBehaviour
         Refresh();
 
         loading = false;
+        loadingBlocker.SetActive(false);
     }
 
     [SerializeField]
@@ -297,18 +301,6 @@ public class Main : MonoBehaviour
         }
 
         return failSprite;
-    }
-
-    public ImageResource GetImageResource(string uri)
-    {
-        ImageResource resource;
-
-        if (!resources.TryGetValue(uri, out resource))
-        {
-            resource = resources.First().Value;
-        }
-
-        return resource;
     }
 
     public void CreateGraphic(ImageResource resource)
