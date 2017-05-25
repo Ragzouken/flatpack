@@ -30,7 +30,7 @@ public class RawImporterPanel : MonoBehaviour
     private GameObject scrubPrompt;
 
     [SerializeField]
-    private Image sourceImage, maskImage;
+    private Image maskImage;
 
     [SerializeField]
     private UnityEngine.UI.RawImage previewImage;
@@ -45,7 +45,7 @@ public class RawImporterPanel : MonoBehaviour
     private void Awake()
     {
         brush = TextureByte.Draw.Circle(64, 255);
-        webcam = new WebCamTexture(512, 512, 60);
+        webcam = new WebCamTexture();
 
         previewImage.texture = webcam;
     }
