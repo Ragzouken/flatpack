@@ -33,7 +33,7 @@ public class RawImporterPanel : MonoBehaviour
     private Image maskImage;
 
     [SerializeField]
-    private UnityEngine.UI.RawImage previewImage;
+    private RawImage previewImage;
 
     private WebCamTexture webcam;
     

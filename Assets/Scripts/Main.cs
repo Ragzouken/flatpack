@@ -29,8 +29,6 @@ public class Main : MonoBehaviour
     [SerializeField]
     private InputField storyNameInput;
     [SerializeField]
-    private CanvasGroup layerGroup;
-    [SerializeField]
     private GraphicBrowserPanel graphicsBrowser;
 
     [SerializeField]
@@ -292,8 +290,18 @@ public class Main : MonoBehaviour
     public void CreateGraphic(ImageResource resource)
     {
         var graphic = scene.AddNewGraphic(resource.id);
-        graphic.position = new Vector2(Camera.main.pixelWidth,
-                                       Camera.main.pixelHeight) * 0.5f;
+
+        Vector2 screen = new Vector2(Camera.main.pixelWidth,
+                                     Camera.main.pixelHeight) * 0.5f;
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(worldTransform as RectTransform,
+                                                                screen,
+                                                                null,
+                                                                out graphic.position);
+
+        //Debug.Log(graphic.position);
+
+        graphic.direction = -worldObject.direction;
         graphic.depth = scene.graphics.Max(g => g.depth) + 0.01f;
 
         Select(graphic);
