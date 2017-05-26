@@ -65,6 +65,9 @@ public class Main : MonoBehaviour
     private float hudVelocity;
 
     [SerializeField]
+    private CanvasGroup pinnedGroup;
+
+    [SerializeField]
     private Toggle pinnedToggle;
 
     private void Awake()
@@ -147,6 +150,8 @@ public class Main : MonoBehaviour
         }
 
         Refresh();
+
+        pinnedGroup.alpha = playing ? 1f : 0.25f;
 
         if (!playing)
         {

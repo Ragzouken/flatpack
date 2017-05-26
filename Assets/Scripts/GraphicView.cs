@@ -24,7 +24,7 @@ public class GraphicView : InstanceView<FlatGraphic>
         float u = (Time.timeSinceLevelLoad * pulseSpeed) % 1;
         u = Mathf.Sin(u * Mathf.PI * 2) * 0.5f + 0.5f;
 
-        image.color = (config.pinned && !main.playing) ? Color.white * 0.75f : Color.white;
+        //image.color = (config.pinned && !main.playing) ? Color.white * 0.75f : Color.white;
 
         image.sprite = main.GetImageSprite(config.graphicURI);
         image.alphaHitTestMinimumThreshold = 0.25f;
