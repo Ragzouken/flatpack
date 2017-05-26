@@ -56,9 +56,13 @@ public class Main : MonoBehaviour
     private float prevDepth;
 
     [SerializeField]
-    private GameObject toolbar;
+    private GameObject sceneHUD;
     [SerializeField]
     private GameObject debug;
+
+    [SerializeField]
+    private CanvasGroup hudGroup;
+    private float hudVelocity;
 
     [SerializeField]
     private Toggle pinnedToggle;
@@ -95,6 +99,8 @@ public class Main : MonoBehaviour
 
     public void SetStory(FlatStory story)
     {
+        sceneHUD.SetActive(true);
+
         this.story = story;
         scene = story.scene;
 
@@ -160,6 +166,10 @@ public class Main : MonoBehaviour
         worldTransform.position = (Vector3) worldObject.position + Vector3.back * worldObject.depth;
         worldTransform.localScale = worldObject.scale * Vector3.one;
         worldTransform.localEulerAngles = worldObject.direction * Vector3.forward;
+
+        float target = (oneFinger || twoFinger) ? .05f : 1f;
+
+        hudGroup.alpha = Mathf.SmoothDamp(hudGroup.alpha, target, ref hudVelocity, .1f);
     }
 
     public void ResetCamera()
@@ -318,7 +328,7 @@ public class Main : MonoBehaviour
         Deselect();
         Save();
 
-        toolbar.SetActive(false);
+        sceneHUD.SetActive(false);
         debug.SetActive(false);
     }
 
@@ -327,7 +337,7 @@ public class Main : MonoBehaviour
         playing = false;
         ResetCamera();
 
-        toolbar.SetActive(true);
+        sceneHUD.SetActive(true);
         debug.SetActive(true);
     }
 
