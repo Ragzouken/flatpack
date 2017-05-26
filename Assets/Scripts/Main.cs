@@ -347,17 +347,29 @@ public class Main : MonoBehaviour
     }
 
     #region Play Touch Controls
-    
+
+    private bool playTouchHeld;
+    private Vector2 playTouchOrigin;
+
     public void CheckPlayControls()
     {
         if (Input.GetMouseButton(0))
         {
-            Vector2 center = new Vector2(Camera.main.pixelWidth,
-                                         Camera.main.pixelHeight) * 0.5f;
+            if (playTouchHeld)
+            {
+                Vector2 delta = (Vector2) Input.mousePosition - playTouchOrigin;
 
-            Vector2 delta = (Vector2) Input.mousePosition - center;
-
-            worldObject.position -= delta * Time.deltaTime;
+                worldObject.position -= delta * Time.deltaTime;
+            }
+            else
+            {
+                playTouchHeld = true;
+                playTouchOrigin = Input.mousePosition;
+            }
+        }
+        else
+        {
+            playTouchHeld = false;
         }
     }
     
