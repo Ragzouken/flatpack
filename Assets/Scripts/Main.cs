@@ -609,6 +609,8 @@ public class Main : MonoBehaviour
             selected.scale = Mathf.Max(0.1f, baseScale * scaleMult);
             selected.direction = baseAngle + deltaAngle;
             selected.position = nextO;
+
+            worldObject.direction = 0;
         }
         else
         {
