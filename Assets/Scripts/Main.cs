@@ -66,6 +66,7 @@ public class Main : MonoBehaviour
 
     [SerializeField]
     private CanvasGroup pinnedGroup;
+    private float pinnedVelocity;
 
     [SerializeField]
     private Toggle pinnedToggle;
@@ -154,9 +155,15 @@ public class Main : MonoBehaviour
 
         Refresh();
 
-        float delta = Mathf.Min(Mathf.Abs(worldObject.scale - 1), 1); 
+        {
+            float delta = Mathf.Abs(Mathf.Log(worldObject.scale, 2));
+            bool showPinned = delta < 0.25f;
 
-        pinnedGroup.alpha = playing ? 1f : delta;
+            float target = showPinned ? 0.75f : 0f;
+
+            pinnedGroup.alpha = playing ? 1f : Mathf.SmoothDamp(pinnedGroup.alpha, target, ref pinnedVelocity, .25f);
+            pinnedGroup.blocksRaycasts = showPinned;
+        }
 
         if (!playing)
         {
@@ -177,9 +184,10 @@ public class Main : MonoBehaviour
         worldTransform.localScale = worldObject.scale * Vector3.one;
         worldTransform.localEulerAngles = worldObject.direction * Vector3.forward;
 
-        float target = (oneFinger || twoFinger) ? .05f : 1f;
-
-        hudGroup.alpha = Mathf.SmoothDamp(hudGroup.alpha, target, ref hudVelocity, .1f);
+        {
+            float target = (oneFinger || twoFinger) ? .05f : 1f;
+            hudGroup.alpha = Mathf.SmoothDamp(hudGroup.alpha, target, ref hudVelocity, .1f);
+        }
 
         Vector2 screen = new Vector2(Screen.width, Screen.height);
         Vector2 center = screen * 0.5f;
