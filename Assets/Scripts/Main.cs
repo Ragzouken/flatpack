@@ -154,7 +154,9 @@ public class Main : MonoBehaviour
 
         Refresh();
 
-        //pinnedGroup.alpha = playing ? 1f : 0.25f;
+        float delta = Mathf.Min(Mathf.Abs(worldObject.scale - 1), 1); 
+
+        pinnedGroup.alpha = playing ? 1f : delta;
 
         if (!playing)
         {
