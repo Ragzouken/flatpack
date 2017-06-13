@@ -108,7 +108,26 @@ public class RawImporterPanel : MonoBehaviour
         Color32 clear = Color.clear;
 
         var pix = webcam.GetPixels32();
-        var next = new Texture2D(webcam.width, webcam.height, TextureFormat.ARGB32, false);
+
+        int min_x = webcam.width, min_y = webcam.height, max_x = 0, max_y = 0;
+
+        for (int y = 0; y < webcam.height; ++y)
+        {
+            for (int x = 0; x < webcam.width; ++x)
+            {
+                int i = y * webcam.width + x;
+
+                if (mask.mTexture.pixels[i] <= 128)
+                {
+                    min_x = Mathf.Min(x, min_x);
+                    min_y = Mathf.Min(y, min_y);
+                    max_x = Mathf.Max(x, max_x);
+                    max_y = Mathf.Max(y, max_y);
+                }
+            }
+        }
+
+        //Debug.LogFormat("{0} {1} {2} {3}", min_x, min_y, max_x, max_y);
 
         for (int i = 0; i < pix.Length; ++i)
         {
@@ -118,7 +137,29 @@ public class RawImporterPanel : MonoBehaviour
             }
         }
 
-        next.SetPixels32(pix);
+        var next = new Texture2D(max_x - min_x + 1, 
+                                 max_y - min_y + 1, 
+                                 TextureFormat.ARGB32, 
+                                 false);
+
+        var pixels = next.GetPixels32();
+
+        {
+            int ti = 0;
+
+            for (int y = min_y; y <= max_y; ++y)
+            {
+                for (int x = min_x; x <= max_x; ++x)
+                {
+                    int i = y * mask.mTexture.width + x;
+
+                    pixels[ti] = pix[i];
+                    ti += 1;
+                }
+            }
+        }
+
+        next.SetPixels32(pixels);
         next.Apply();
 
         string id = Guid.NewGuid().ToString();

@@ -154,7 +154,7 @@ public class Main : MonoBehaviour
 
         Refresh();
 
-        pinnedGroup.alpha = playing ? 1f : 0.25f;
+        //pinnedGroup.alpha = playing ? 1f : 0.25f;
 
         if (!playing)
         {
