@@ -70,6 +70,9 @@ public class Main : MonoBehaviour
     [SerializeField]
     private Toggle pinnedToggle;
 
+    [SerializeField]
+    private Image grid;
+
     private void Awake()
     {
         graphics = graphicsSetup.Finalise<FlatGraphic>();
@@ -175,6 +178,21 @@ public class Main : MonoBehaviour
         float target = (oneFinger || twoFinger) ? .05f : 1f;
 
         hudGroup.alpha = Mathf.SmoothDamp(hudGroup.alpha, target, ref hudVelocity, .1f);
+
+        Vector2 screen = new Vector2(Screen.width, Screen.height);
+        Vector2 center = screen * 0.5f;
+        Vector2 local;
+        
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(worldTransform as RectTransform, center, null, out local);
+
+        local.x -= local.x % 128;
+        local.y -= local.y % 128;
+        grid.transform.localPosition = local;
+
+        float scale = Mathf.Ceil(1f / worldObject.scale);
+
+        grid.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2048 * scale);
+        grid.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2048 * scale);
     }
 
     public void ResetCamera()
