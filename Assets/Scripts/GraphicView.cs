@@ -27,7 +27,7 @@ public class GraphicView : InstanceView<FlatGraphic>
         //image.color = (config.pinned && !main.playing) ? Color.white * 0.75f : Color.white;
 
         image.sprite = main.GetImageSprite(config.graphicURI);
-        image.alphaHitTestMinimumThreshold = 0.25f;
+        image.alphaHitTestMinimumThreshold = 0.125f;
         image.SetNativeSize();
 
         Vector3 scale = config.scale * Vector3.one * (selected ? Mathf.Lerp(0.975f, 1.025f, u) : 1);
