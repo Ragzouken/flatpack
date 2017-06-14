@@ -56,6 +56,8 @@ public class Main : MonoBehaviour
     private float prevDepth;
 
     [SerializeField]
+    private GameObject playHUD;
+    [SerializeField]
     private GameObject sceneHUD;
     [SerializeField]
     private GameObject debug;
@@ -361,6 +363,7 @@ public class Main : MonoBehaviour
         Deselect();
         Save();
 
+        playHUD.SetActive(true);
         sceneHUD.SetActive(false);
         debug.SetActive(false);
     }
@@ -370,6 +373,7 @@ public class Main : MonoBehaviour
         playing = false;
         ResetCamera();
 
+        playHUD.SetActive(false);
         sceneHUD.SetActive(true);
         debug.SetActive(true);
     }
