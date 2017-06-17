@@ -44,6 +44,20 @@ public static class Saves
         return string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
     }
 
+     public static void RefreshAndroidFile(string path)
+     {
+#if UNITY_ANDROID
+        if(!File.Exists(path))
+             return;
+ 
+         using (AndroidJavaClass jcUnityPlayer = new AndroidJavaClass ("com.unity3d.player.UnityPlayer"))
+         using (AndroidJavaObject joActivity = jcUnityPlayer.GetStatic<AndroidJavaObject> ("currentActivity"))
+         using (AndroidJavaObject joContext = joActivity.Call<AndroidJavaObject> ("getApplicationContext"))
+         using (AndroidJavaClass jcMediaScannerConnection = new AndroidJavaClass ("android.media.MediaScannerConnection"))
+         jcMediaScannerConnection.CallStatic("scanFile", joContext, new string[] { path }, null, null);
+#endif
+    }
+
     public static string GetGraphicPath(string id)
     {
         return Application.persistentDataPath + "/imported/" + id + ".png";
@@ -137,7 +151,7 @@ public static class Saves
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
         root = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #elif UNITY_ANDROID
-        root = "/sdcard/Download";
+        root = "/storage/emulated/0/Download";
 #else
         Debug.Log("Export not supported on this platform!");
         return;
@@ -158,6 +172,7 @@ public static class Saves
             else
             {
                 File.Copy(GetGraphicPath(id), folder + "/" + id + ".png", true);
+                RefreshAndroidFile(folder + "/" + id + ".png");
             }
         }
 
