@@ -56,6 +56,8 @@ public class Main : MonoBehaviour
     private float prevDepth;
 
     [SerializeField]
+    private GameObject titleScreen;
+    [SerializeField]
     private GameObject playHUD;
     [SerializeField]
     private GameObject sceneHUD;
@@ -104,6 +106,20 @@ public class Main : MonoBehaviour
     public void Save()
     {
         Saves.SaveStory(story);
+    }
+
+    public IEnumerator PlayStory(FlatStory story)
+    {
+        titleScreen.SetActive(false);
+        sceneHUD.SetActive(false);
+
+        this.story = story;
+        scene = story.scene;
+
+        loading = true;
+        yield return StartCoroutine(LoadResources());
+
+        StartPlaying();
     }
 
     public void SetStory(FlatStory story)
@@ -237,7 +253,12 @@ public class Main : MonoBehaviour
 
     public IEnumerator LoadFromImported(string id)
     {
+#if UNITY_EDITOR || UNITY_ANDROID
         return LoadFromURL("file://" + Application.persistentDataPath + "/imported/" + id + ".png", id: id);
+#else
+        return LoadFromURL(Application.streamingAssetsPath + "/" + story.blurb.id + "/" + id + ".png", id: id);
+#endif
+        
     }
 
     public IEnumerator LoadFromFile(string file)
@@ -255,6 +276,11 @@ public class Main : MonoBehaviour
         var load = new WWW(url);
 
         yield return load;
+
+        if (load.error != null)
+        {
+            Debug.LogFormat("Failed to load '{0}'", url);
+        }
 
         var resource = new ImageResource
         {
@@ -378,13 +404,35 @@ public class Main : MonoBehaviour
         debug.SetActive(true);
     }
 
-    #region Play Touch Controls
+#region Play Touch Controls
 
     private bool playTouchHeld;
     private Vector2 playTouchOrigin;
 
     public void CheckPlayControls()
     {
+        float speed = 256;
+
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+        {
+            worldObject.position -= Vector2.left * speed * Time.deltaTime;
+        }
+
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+        {
+            worldObject.position -= Vector2.right * speed * Time.deltaTime;
+        }
+
+        if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
+        {
+            worldObject.position -= Vector2.up * speed * Time.deltaTime;
+        }
+
+        if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
+        {
+            worldObject.position -= Vector2.down * speed * Time.deltaTime;
+        }
+
         if (Input.GetMouseButton(0))
         {
             if (playTouchHeld)
@@ -405,9 +453,9 @@ public class Main : MonoBehaviour
         }
     }
     
-    #endregion
+#endregion
 
-    #region Editor Selection
+#region Editor Selection
 
     public FlatGraphic selected { get; private set; }
 
@@ -481,9 +529,9 @@ public class Main : MonoBehaviour
         Deselect();
     }
 
-    #endregion
+#endregion
 
-    #region Editor Touch Controls
+#region Editor Touch Controls
 
     private bool tapping;
     private Vector2 tapPosition;
@@ -666,5 +714,5 @@ public class Main : MonoBehaviour
         return new Vector2(d * Mathf.Cos(a), d * Mathf.Sin(a));
     }
 
-    #endregion
+#endregion
 }

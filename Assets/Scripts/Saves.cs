@@ -6,8 +6,8 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-using Random = UnityEngine.Random;
 using System.IO;
+using UnityEngine.Networking;
 
 public class FlatBlurb
 {
@@ -177,6 +177,9 @@ public static class Saves
         }
 
         SaveStory(story, location: folder);
+
+        RefreshAndroidFile(folder + "/story.json");
+        RefreshAndroidFile(folder + "/blurb.json");
     }
 
     public static FlatBlurb CopyStory(FlatBlurb blurb)
