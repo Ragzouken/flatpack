@@ -163,4 +163,32 @@ public static class Saves
 
         SaveStory(story, location: folder);
     }
+
+    public static FlatBlurb CopyStory(FlatBlurb blurb)
+    {
+        string name = blurb.name + " Copy";
+
+        var story = LoadStory(blurb);
+        story.blurb = new FlatBlurb
+        {
+            id = Sanitize(name) + "-" + Guid.NewGuid().ToString(),
+            graphics = blurb.graphics,
+            modified = DateTime.UtcNow,
+            name = name,
+        };
+
+        SaveStory(story);
+
+        blurbs[story.blurb.id] = story.blurb;
+
+        return story.blurb;
+    }
+    
+    public static void DeleteStory(FlatBlurb blurb)
+    {
+        string folder = Path.Combine(root, blurb.id);
+        Directory.Delete(folder, true);
+
+        blurbs.Remove(blurb.id);
+    }
 }

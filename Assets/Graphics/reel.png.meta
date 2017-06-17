@@ -1,9 +1,10 @@
 fileFormatVersion: 2
 guid: 4876a4c33b149554a9fe60739a1677d7
-timeCreated: 1495035503
+timeCreated: 1497450785
 licenseType: Free
 TextureImporter:
-  fileIDToRecycleName: {}
+  fileIDToRecycleName:
+    21300000: reel_0
   serializedVersion: 4
   mipmaps:
     mipMapMode: 0
@@ -84,7 +85,20 @@ TextureImporter:
     overridden: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: reel_0
+      rect:
+        serializedVersion: 2
+        x: 616
+        y: 0
+        width: 506
+        height: 3923
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 458, w: 0}
+      outline: []
+      tessellationDetail: 0
     outline: []
   spritePackingTag: ui
   userData: 

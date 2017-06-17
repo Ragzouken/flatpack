@@ -81,7 +81,7 @@ public class RawImporterPanel : MonoBehaviour
         maskImage.sprite = mask.uSprite;
         //maskImage.SetNativeSize();
 
-        acceptButton.interactable = true;
+        acceptButton.interactable = false;
         captureButton.interactable = false;
         capturePrompt.SetActive(false);
         scrubPrompt.SetActive(true);
@@ -238,6 +238,8 @@ public class RawImporterPanel : MonoBehaviour
                 mask.Apply();
 
                 TextureByte.Draw.FreeSprite(sweep);
+
+                acceptButton.interactable = true;
             }
 
             prev = next;
