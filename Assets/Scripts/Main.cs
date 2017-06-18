@@ -159,8 +159,8 @@ public class Main : MonoBehaviour
         {
             if (!selected.pinned && pinnedToggle.isOn)
             {
-                var pos = screenTransform.InverseTransformPoint(selected.position);
-                selected.position = worldTransform.TransformPoint(pos);
+                var pos = worldTransform.TransformPoint(selected.position);
+                selected.position = screenTransform.InverseTransformPoint(pos);
                 selected.direction += worldObject.direction;
                 selected.scale *= worldObject.scale;
                 selected.pinned = true;

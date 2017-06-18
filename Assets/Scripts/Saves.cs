@@ -199,6 +199,7 @@ public static class Saves
         File.WriteAllBytes(zipPath, request.bytes);
         RefreshAndroidFile(zipPath);
 
+        Directory.Delete(folder, true);
         ZipUtil.Unzip(zipPath, root);
         Directory.Move(root + "/flatweb", folder);
 
