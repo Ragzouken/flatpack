@@ -643,8 +643,18 @@ public class Main : MonoBehaviour
         }
         else
         {
-            nextTouch1 = screenTransform.InverseTransformPoint(nextTouch1);
-            nextTouch2 = screenTransform.InverseTransformPoint(nextTouch2);
+            /*
+            Vector2 copy = nextTouch1;
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(screenTransform as RectTransform, copy, null, out nextTouch1);
+
+            Debug.Log(nextTouch1);
+
+            //RectTransformUtility.ScreenPointToLocalPointInRectangle(screenTransform as RectTransform, nextTouch2, null, out nextTouch2);
+
+            //nextTouch1 = screenTransform.InverseTransformPoint(nextTouch1);
+            //nextTouch2 = screenTransform.InverseTransformPoint(nextTouch2);
+            */
         }
 
         bool touch1Begin = Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began;
