@@ -52,11 +52,6 @@ public class StoryBrowser : MonoBehaviour
         thumbnails.Refresh();
     }
 
-    public void CreateStory()
-    {
-
-    }
-
     public void SelectStory(FlatBlurb blurb)
     {
         Selected = blurb;

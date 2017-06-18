@@ -14,6 +14,8 @@ public class GraphicBrowserPanel : MonoBehaviour
     private Main main;
 
     [SerializeField]
+    private ScrollRect scroll;
+    [SerializeField]
     private InstancePoolSetup thumbnailsSetup;
     private InstancePool<ImageResource> thumbnails;
 
@@ -46,5 +48,10 @@ public class GraphicBrowserPanel : MonoBehaviour
     {
         main.CreateGraphic(resource);
         gameObject.SetActive(false);
+    }
+
+    public void ScrollToBottom()
+    {
+        scroll.verticalNormalizedPosition = 0;
     }
 }

@@ -249,6 +249,7 @@ public class Main : MonoBehaviour
         story.graphics.Add(id);
 
         graphicsBrowser.Refresh();
+        graphicsBrowser.ScrollToBottom();
     }
 
     public IEnumerator LoadFromImported(string id)
