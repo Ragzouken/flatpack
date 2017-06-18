@@ -52,6 +52,8 @@ public class Main : MonoBehaviour
     private FlatGraphic worldObject = new FlatGraphic { scale = 1 };
     [SerializeField]
     private Transform worldTransform;
+    [SerializeField]
+    private Transform screenTransform;
 
     private float prevDepth;
 
@@ -157,14 +159,16 @@ public class Main : MonoBehaviour
         {
             if (!selected.pinned && pinnedToggle.isOn)
             {
-                selected.position = worldTransform.TransformPoint(selected.position);
+                var pos = screenTransform.InverseTransformPoint(selected.position);
+                selected.position = worldTransform.TransformPoint(pos);
                 selected.direction += worldObject.direction;
                 selected.scale *= worldObject.scale;
                 selected.pinned = true;
             }
             else if (selected.pinned && !pinnedToggle.isOn)
             {
-                selected.position = worldTransform.InverseTransformPoint(selected.position);
+                var pos = screenTransform.TransformPoint(selected.position);
+                selected.position = worldTransform.InverseTransformPoint(pos);
                 selected.direction -= worldObject.direction;
                 selected.scale /= worldObject.scale;
                 selected.pinned = false;
@@ -187,6 +191,8 @@ public class Main : MonoBehaviour
         {
             CheckTouchTransform();
             CheckTouchSelect();
+
+            story.resolution = new Vector2(Screen.width, Screen.height);
         }
         else
         {
@@ -634,6 +640,11 @@ public class Main : MonoBehaviour
         {
             nextTouch1 = worldTransform.InverseTransformPoint(nextTouch1);
             nextTouch2 = worldTransform.InverseTransformPoint(nextTouch2);
+        }
+        else
+        {
+            nextTouch1 = screenTransform.InverseTransformPoint(nextTouch1);
+            nextTouch2 = screenTransform.InverseTransformPoint(nextTouch2);
         }
 
         bool touch1Begin = Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began;

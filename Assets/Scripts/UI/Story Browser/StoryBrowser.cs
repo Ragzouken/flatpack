@@ -80,7 +80,8 @@ public class StoryBrowser : MonoBehaviour
         Assert.IsNotNull(Selected, "No story selected to export!");
 
         var story = Saves.LoadStory(Selected);
-        Saves.ExportStory(story);
+
+        StartCoroutine(Saves.ExportStory(story));
     }
 
     public void CopySelected()

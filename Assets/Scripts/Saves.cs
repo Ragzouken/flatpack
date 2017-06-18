@@ -7,9 +7,8 @@ using System.Collections;
 using System.Collections.Generic;
 
 using System.IO;
-using UnityEngine.Networking;
 
-public class FlatBlurb
+public class FlatBlurb 
 {
     [NonSerialized]
     public string id;
@@ -23,6 +22,7 @@ public class FlatStory
     [NonSerialized]
     public FlatBlurb blurb;
     public FlatScene scene;
+    public Vector2 resolution;
     public List<string> graphics = new List<string>();
 }
 
@@ -144,7 +144,36 @@ public static class Saves
         return story;
     }
 
-    public static void ExportStory(FlatStory story)
+    public static void Copy(string sourceDirectory, string targetDirectory)
+    {
+        DirectoryInfo diSource = new DirectoryInfo(sourceDirectory);
+        DirectoryInfo diTarget = new DirectoryInfo(targetDirectory);
+
+        CopyAll(diSource, diTarget);
+    }
+
+    public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
+    {
+        Directory.CreateDirectory(target.FullName);
+
+        // Copy each file into the new directory.
+        foreach (FileInfo fi in source.GetFiles())
+        {
+            Console.WriteLine(@"Copying {0}\{1}", target.FullName, fi.Name);
+            fi.CopyTo(Path.Combine(target.FullName, fi.Name), true);
+            RefreshAndroidFile(Path.Combine(target.FullName, fi.Name));
+        }
+
+        // Copy each subdirectory using recursion.
+        foreach (DirectoryInfo diSourceSubDir in source.GetDirectories())
+        {
+            DirectoryInfo nextTargetSubDir =
+                target.CreateSubdirectory(diSourceSubDir.Name);
+            CopyAll(diSourceSubDir, nextTargetSubDir);
+        }
+    }
+
+    public static IEnumerator ExportStory(FlatStory story)
     {
         string root;
 
@@ -161,7 +190,26 @@ public static class Saves
         string name = Sanitize(story.blurb.name);
         string folder = Path.Combine(root, name);
 
-        Directory.CreateDirectory(folder);
+        var request = new WWW(Application.streamingAssetsPath + "/flatweb.zip");
+
+        yield return request;
+
+        string zipPath = root + "/flatweb.zip";
+
+        File.WriteAllBytes(zipPath, request.bytes);
+        RefreshAndroidFile(zipPath);
+
+        ZipUtil.Unzip(zipPath, root);
+        Directory.Move(root + "/flatweb", folder);
+
+        string dest = folder + "/StreamingAssets/" + name;
+        Directory.CreateDirectory(dest);
+
+        File.WriteAllText(folder + "/StreamingAssets/autoplay.json", 
+            JsonUtility.ToJson(new AutoPlay
+        {
+            storyID = name,
+        }));
 
         foreach (string id in story.graphics)
         {
@@ -171,15 +219,20 @@ public static class Saves
             }
             else
             {
-                File.Copy(GetGraphicPath(id), folder + "/" + id + ".png", true);
-                RefreshAndroidFile(folder + "/" + id + ".png");
+                File.Copy(GetGraphicPath(id), dest + "/" + id + ".png", true);
+                //RefreshAndroidFile(dest + "/" + id + ".png");
             }
         }
 
-        SaveStory(story, location: folder);
+        SaveStory(story, location: dest);
 
-        RefreshAndroidFile(folder + "/story.json");
-        RefreshAndroidFile(folder + "/blurb.json");
+        //RefreshAndroidFile(dest + "/story.json");
+        //RefreshAndroidFile(dest + "/blurb.json");
+
+        foreach (string file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories))
+        {
+            RefreshAndroidFile(file);
+        }
     }
 
     public static FlatBlurb CopyStory(FlatBlurb blurb)
