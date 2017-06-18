@@ -33,6 +33,8 @@ public class RawImporterPanel : MonoBehaviour
     private Image maskImage;
 
     [SerializeField]
+    private AspectRatioFitter fitter;
+    [SerializeField]
     private RawImage previewImage;
 
     private WebCamTexture webcam;
@@ -180,11 +182,6 @@ public class RawImporterPanel : MonoBehaviour
         capturePrompt.SetActive(false);
         scrubPrompt.SetActive(false);
 
-        if (webcam != null)
-        {
-
-        }
-
         maskImage.gameObject.SetActive(false);
 
         if (mask != null)
@@ -211,6 +208,14 @@ public class RawImporterPanel : MonoBehaviour
 
     private void Update()
     {
+        if (webcam != null)
+        {
+            float w = webcam.width;
+            float h = webcam.height;
+
+            fitter.aspectRatio = w / h;
+        }
+
         if (mask == null)
         {
             return;
