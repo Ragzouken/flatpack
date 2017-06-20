@@ -80,6 +80,9 @@ public class Main : MonoBehaviour
     [SerializeField]
     private Image grid;
 
+    [SerializeField]
+    private AudioSource music;
+
     private void Awake()
     {
         graphics = graphicsSetup.Finalise<FlatGraphic>();
@@ -108,6 +111,22 @@ public class Main : MonoBehaviour
     public void Save()
     {
         Saves.SaveStory(story);
+    }
+
+    public IEnumerator PlayMusic()
+    {
+        var music = new WWW("file:///storage/emulated/0/Download/music.ogg");
+
+        //yield return music;
+
+        this.music.clip = music.GetAudioClip(false, true);
+        
+        while (!this.music.clip.isReadyToPlay)
+        {
+            yield return null;
+        }
+
+        this.music.Play();
     }
 
     public IEnumerator PlayStory(FlatStory story)
@@ -399,6 +418,8 @@ public class Main : MonoBehaviour
         playHUD.SetActive(true);
         sceneHUD.SetActive(false);
         debug.SetActive(false);
+
+        StartCoroutine(PlayMusic());
     }
 
     public void StopPlaying()
@@ -409,6 +430,8 @@ public class Main : MonoBehaviour
         playHUD.SetActive(false);
         sceneHUD.SetActive(true);
         debug.SetActive(true);
+
+        music.Stop();
     }
 
 #region Play Touch Controls
