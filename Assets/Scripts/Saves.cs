@@ -24,6 +24,7 @@ public class FlatStory
     public FlatScene scene;
     public Vector2 resolution;
     public List<string> graphics = new List<string>();
+    public string musicID;
 }
 
 public static class Saves 
@@ -183,7 +184,7 @@ public static class Saves
         root = "/storage/emulated/0/Download";
 #else
         Debug.Log("Export not supported on this platform!");
-        return;
+        yield break;
 #endif
 
         root = Path.Combine(root, "Flatpack Exports");
@@ -196,6 +197,7 @@ public static class Saves
 
         string zipPath = root + "/flatweb.zip";
 
+        File.Delete(zipPath);
         File.WriteAllBytes(zipPath, request.bytes);
         RefreshAndroidFile(zipPath);
 
@@ -214,15 +216,12 @@ public static class Saves
 
         foreach (string id in story.graphics)
         {
-            if (id.StartsWith("file:"))
-            {
-                Debug.LogWarningFormat("Can't export old style file: {0}", id);
-            }
-            else
-            {
-                File.Copy(GetGraphicPath(id), dest + "/" + id + ".png", true);
-                //RefreshAndroidFile(dest + "/" + id + ".png");
-            }
+            File.Copy(GetGraphicPath(id), dest + "/" + id + ".png", true);
+        }
+
+        if (story.musicID != null)
+        {
+            File.Copy("/storage/emulated/0/Download/" + story.musicID, dest + "/" + story.musicID, true);
         }
 
         SaveStory(story, location: dest);

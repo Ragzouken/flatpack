@@ -99,7 +99,7 @@ public class Main : MonoBehaviour
         Application.Quit();
     }
 
-    private FlatStory story;
+    public FlatStory story { get; private set; }
 
     public void CreateFromInput()
     {
@@ -113,20 +113,48 @@ public class Main : MonoBehaviour
         Saves.SaveStory(story);
     }
 
-    public IEnumerator PlayMusic()
+    private Coroutine musicPlayback;
+
+    public void PlayMusic(string path)
     {
-        var music = new WWW("file:///storage/emulated/0/Download/music.ogg");
+        musicPlayback = StartCoroutine(PlayMusicCO(path));
+    }
+        
+    public IEnumerator PlayMusicCO(string path)
+    {
+        var music = new WWW(path);
 
-        //yield return music;
+#if UNITY_WEBGL
+        yield return music;
 
+        if (Path.GetExtension(path) == ".ogg")
+        {
+            this.music.clip = music.GetAudioClipCompressed(false, AudioType.AUDIOQUEUE);
+        }
+        else if (Path.GetExtension(path) == ".mp3")
+        {
+            this.music.clip = music.GetAudioClip();
+        }
+#else
         this.music.clip = music.GetAudioClip(false, true);
         
         while (!this.music.clip.isReadyToPlay)
         {
             yield return null;
         }
+#endif
 
         this.music.Play();
+    }
+
+    public void StopMusic()
+    {
+        if (musicPlayback != null)
+        {
+            StopCoroutine(musicPlayback);
+        }
+
+        music.Stop();
     }
 
     public IEnumerator PlayStory(FlatStory story)
@@ -287,6 +315,15 @@ public class Main : MonoBehaviour
         
     }
 
+    public string GetMusicPath(string id)
+    {
+#if UNITY_EDITOR || UNITY_ANDROID
+        return "file:///storage/emulated/0/Download/" + id;
+#else
+        return Application.streamingAssetsPath + "/" + story.blurb.id + "/" + id;
+#endif
+    }
+
     public IEnumerator LoadFromFile(string file)
     {
         return LoadFromURL("file://" + file);
@@ -349,6 +386,11 @@ public class Main : MonoBehaviour
 
         loadingSlider.maxValue = expected.Count;
 
+        if (story.musicID != null)
+        {
+            loadingSlider.maxValue += 1;
+        }
+
         foreach (string file in expected)
         {
             if (file.StartsWith("jar") || file.StartsWith("file"))
@@ -361,6 +403,11 @@ public class Main : MonoBehaviour
             }
 
             loadingSlider.value += 1;
+        }
+
+        if (story.musicID != null)
+        {
+            yield return StartCoroutine(PlayMusicCO(GetMusicPath(story.musicID)));
         }
 
         Refresh();
@@ -419,7 +466,9 @@ public class Main : MonoBehaviour
         sceneHUD.SetActive(false);
         debug.SetActive(false);
 
-        StartCoroutine(PlayMusic());
+#if !UNITY_WEBGL
+        PlayMusic(GetMusicPath(story.musicID));
+#endif
     }
 
     public void StopPlaying()
