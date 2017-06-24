@@ -129,11 +129,15 @@ public class Main : MonoBehaviour
 
         if (Path.GetExtension(path) == ".ogg")
         {
+            Debug.LogFormat("Attempt to load OGG '{0}'", path);
+
             this.music.clip = music.GetAudioClipCompressed(false, AudioType.AUDIOQUEUE);
         }
         else if (Path.GetExtension(path) == ".mp3")
         {
-            this.music.clip = music.GetAudioClip();
+            Debug.LogFormat("Attempt to load MP3 '{0}'", path);
+
+            this.music.clip = music.GetAudioClipCompressed(false, AudioType.MPEG);
         }
 #else
         this.music.clip = music.GetAudioClip(false, true);
@@ -272,8 +276,8 @@ public class Main : MonoBehaviour
 
         float scale = Mathf.Ceil(1f / worldObject.scale);
 
-        grid.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 2048 * scale);
-        grid.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 2048 * scale);
+        grid.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 4096 * scale);
+        grid.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 4096 * scale);
     }
 
     public void ResetCamera()
@@ -405,10 +409,12 @@ public class Main : MonoBehaviour
             loadingSlider.value += 1;
         }
 
+#if UNITY_WEBGL
         if (story.musicID != null)
         {
             yield return StartCoroutine(PlayMusicCO(GetMusicPath(story.musicID)));
         }
+#endif
 
         Refresh();
 
@@ -467,7 +473,10 @@ public class Main : MonoBehaviour
         debug.SetActive(false);
 
 #if !UNITY_WEBGL
-        PlayMusic(GetMusicPath(story.musicID));
+        if (story.musicID != null)
+        {
+            PlayMusic(GetMusicPath(story.musicID));
+        }
 #endif
     }
 
