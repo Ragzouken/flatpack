@@ -89,7 +89,7 @@ public class MusicBrowser : MonoBehaviour
 
         thumbnails.Refresh();
 
-        if (Selected != null)
+        if (!string.IsNullOrEmpty(Selected))
         {
             main.PlayMusic(main.GetMusicPath(Selected));
         }

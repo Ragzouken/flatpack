@@ -191,6 +191,8 @@ public static class Saves
         string name = Sanitize(story.blurb.name);
         string folder = Path.Combine(root, name);
 
+        Directory.CreateDirectory(folder);
+
         var request = new WWW(Application.streamingAssetsPath + "/flatweb.zip");
 
         yield return request;
@@ -202,6 +204,7 @@ public static class Saves
             File.Delete(zipPath);
             RefreshAndroidFile(zipPath);
         }
+
         File.WriteAllBytes(zipPath, request.bytes);
         RefreshAndroidFile(zipPath);
 
@@ -227,7 +230,7 @@ public static class Saves
             File.Copy(GetGraphicPath(id), dest + "/" + id + ".png", true);
         }
 
-        if (story.musicID != null)
+        if (!string.IsNullOrEmpty(story.musicID))
         {
             File.Copy("/storage/emulated/0/Download/" + story.musicID, dest + "/" + story.musicID, true);
         }

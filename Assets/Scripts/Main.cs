@@ -124,31 +124,52 @@ public class Main : MonoBehaviour
     {
         var music = new WWW(path);
 
-#if UNITY_WEBGL
-        yield return music;
+        AudioType type = AudioType.UNKNOWN;
 
         if (Path.GetExtension(path) == ".ogg")
         {
-            Debug.LogFormat("Attempt to load OGG '{0}'", path);
-
-            this.music.clip = music.GetAudioClipCompressed(false, AudioType.AUDIOQUEUE);
+            type = AudioType.OGGVORBIS;
         }
         else if (Path.GetExtension(path) == ".mp3")
         {
-            Debug.LogFormat("Attempt to load MP3 '{0}'", path);
+            type = AudioType.MPEG;
+        }
+        else
+        {
+            Debug.LogFormat("Unsure what type '{0}' is.", Path.GetExtension(path));
+        }
 
-            this.music.clip = music.GetAudioClipCompressed(false, AudioType.MPEG);
+#if UNITY_WEBGL
+        yield return music;
+
+        if (music.error != null)
+        {
+            Debug.LogErrorFormat("Couldn't load {0} '{1}' - {2}", type, path, music.error);
+        }
+        else
+        {
+            this.music.clip = music.GetAudioClipCompressed(false, type);
+            this.music.Play();
         }
 #else
-        this.music.clip = music.GetAudioClip(false, true);
-        
+        yield return null;
+        //Debug.LogFormat("{0} {1}", type, path);
+        this.music.clip = music.GetAudioClip(false, true, type);
+
         while (!this.music.clip.isReadyToPlay)
         {
             yield return null;
         }
-#endif
 
-        this.music.Play();
+        if (this.music.clip.loadState == AudioDataLoadState.Failed)
+        {
+            Debug.LogErrorFormat("Couldn't stream {0} '{1}'", type, path);
+        }
+        else
+        {
+            this.music.Play();
+        } 
+#endif
     }
 
     public void StopMusic()
@@ -473,7 +494,7 @@ public class Main : MonoBehaviour
         debug.SetActive(false);
 
 #if !UNITY_WEBGL
-        if (story.musicID != null)
+        if (string.IsNullOrEmpty(story.musicID))
         {
             PlayMusic(GetMusicPath(story.musicID));
         }
@@ -721,21 +742,6 @@ public class Main : MonoBehaviour
         {
             nextTouch1 = worldTransform.InverseTransformPoint(nextTouch1);
             nextTouch2 = worldTransform.InverseTransformPoint(nextTouch2);
-        }
-        else
-        {
-            /*
-            Vector2 copy = nextTouch1;
-
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(screenTransform as RectTransform, copy, null, out nextTouch1);
-
-            Debug.Log(nextTouch1);
-
-            //RectTransformUtility.ScreenPointToLocalPointInRectangle(screenTransform as RectTransform, nextTouch2, null, out nextTouch2);
-
-            //nextTouch1 = screenTransform.InverseTransformPoint(nextTouch1);
-            //nextTouch2 = screenTransform.InverseTransformPoint(nextTouch2);
-            */
         }
 
         bool touch1Begin = Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Began;
