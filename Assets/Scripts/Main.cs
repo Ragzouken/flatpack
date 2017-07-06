@@ -659,10 +659,16 @@ public class Main : MonoBehaviour
         var rtransB = (graphics.Get(b) as GraphicView).transform as RectTransform;
 
         rtransA.GetWorldCorners(_corners);
-        var rectA = Rect.MinMaxRect(_corners[0].x, _corners[0].y, _corners[2].x, _corners[2].y);
+        var rectA = Rect.MinMaxRect(_corners.Min(c => c.x), 
+                                    _corners.Min(c => c.y), 
+                                    _corners.Max(c => c.x), 
+                                    _corners.Max(c => c.y));
 
         rtransB.GetWorldCorners(_corners);
-        var rectB = Rect.MinMaxRect(_corners[0].x, _corners[0].y, _corners[2].x, _corners[2].y);
+        var rectB = Rect.MinMaxRect(_corners.Min(c => c.x), 
+                                    _corners.Min(c => c.y), 
+                                    _corners.Max(c => c.x), 
+                                    _corners.Max(c => c.y));
 
         return rectA.Overlaps(rectB);
     }
