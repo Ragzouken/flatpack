@@ -117,26 +117,39 @@ public class Main : MonoBehaviour
 
     public void PlayMusic(string path)
     {
+        if (musicPlayback != null)
+        {
+            StopCoroutine(musicPlayback);
+            musicPlayback = null;
+        }
+
         musicPlayback = StartCoroutine(PlayMusicCO(path));
     }
         
     public IEnumerator PlayMusicCO(string path)
     {
+        string extension = Path.GetExtension(path);
+
+        if (string.IsNullOrEmpty(extension))
+        {
+            yield break;
+        }
+
         var music = new WWW(path);
 
         AudioType type = AudioType.UNKNOWN;
 
-        if (Path.GetExtension(path) == ".ogg")
+        if (extension == ".ogg")
         {
             type = AudioType.OGGVORBIS;
         }
-        else if (Path.GetExtension(path) == ".mp3")
+        else if (extension == ".mp3")
         {
             type = AudioType.MPEG;
         }
         else
         {
-            Debug.LogFormat("Unsure what type '{0}' is.", Path.GetExtension(path));
+            Debug.LogFormat("Unsure what type '{0}' is.", extension);
         }
 
 #if UNITY_WEBGL
@@ -418,14 +431,7 @@ public class Main : MonoBehaviour
 
         foreach (string file in expected)
         {
-            if (file.StartsWith("jar") || file.StartsWith("file"))
-            {
-                Debug.LogErrorFormat("Legacy story file no longer supported :(");
-            }
-            else
-            {
-                yield return StartCoroutine(LoadFromImported(file));
-            }
+            yield return StartCoroutine(LoadFromImported(file));
 
             loadingSlider.value += 1;
         }
@@ -494,7 +500,7 @@ public class Main : MonoBehaviour
         debug.SetActive(false);
 
 #if !UNITY_WEBGL
-        if (string.IsNullOrEmpty(story.musicID))
+        if (!string.IsNullOrEmpty(story.musicID))
         {
             PlayMusic(GetMusicPath(story.musicID));
         }
@@ -590,18 +596,26 @@ public class Main : MonoBehaviour
         {
             int index = objects.IndexOf(selected);
 
-            if (index >= 2)
+            for (int i = index - 1; i >= 0; --i)
             {
-                selected.depth = Mathf.Lerp(objects[index - 2].depth, objects[index - 1].depth, 0.5f);
+                if (Overlaps(selected, objects[i]))
+                {
+                    // next overlap is last graphic
+                    if (i == 0)
+                    {
+                        selected.depth = objects[0].depth + 100;
+                    }
+                    else
+                    {
+                        selected.depth = Mathf.Lerp(objects[i].depth, objects[i - 1].depth, 0.5f);
+                    }
+
+                    return;
+                }
             }
-            else if (index >= 1)
-            {
-                selected.depth = objects[0].depth + 100;
-            }
-            else
-            {
-                selected.depth += 100;
-            }
+
+            // this is already the last graphic
+            selected.depth += 100;
         }
     }
 
@@ -614,19 +628,43 @@ public class Main : MonoBehaviour
             int index = objects.IndexOf(selected);
             int count = objects.Count;
 
-            if (count - index - 1 >= 2)
+            for (int i = index + 1; i < count; ++i)
             {
-                selected.depth = Mathf.Lerp(objects[index + 2].depth, objects[index + 1].depth, 0.5f);
+                if (Overlaps(selected, objects[i]))
+                {
+                    // next overlap is last graphic
+                    if (i == count - 1)
+                    {
+                        selected.depth = objects[count - 1].depth - 100;
+                    }
+                    else
+                    {
+                        selected.depth = Mathf.Lerp(objects[i].depth, objects[i + 1].depth, 0.5f);
+                    }
+
+                    return;
+                }
             }
-            else if (count - index - 1 >= 1)
-            {
-                selected.depth = objects[count - 1].depth - 100;
-            }
-            else
-            {
-                selected.depth -= 100;
-            }
+
+            // this is already the last graphic
+            selected.depth -= 100;
         }
+    }
+
+    private static Vector3[] _corners = new Vector3[4];
+
+    private bool Overlaps(FlatGraphic a, FlatGraphic b)
+    {
+        var rtransA = (graphics.Get(a) as GraphicView).transform as RectTransform;
+        var rtransB = (graphics.Get(b) as GraphicView).transform as RectTransform;
+
+        rtransA.GetWorldCorners(_corners);
+        var rectA = Rect.MinMaxRect(_corners[0].x, _corners[0].y, _corners[2].x, _corners[2].y);
+
+        rtransB.GetWorldCorners(_corners);
+        var rectB = Rect.MinMaxRect(_corners[0].x, _corners[0].y, _corners[2].x, _corners[2].y);
+
+        return rectA.Overlaps(rectB);
     }
 
     public void DeleteSelected()

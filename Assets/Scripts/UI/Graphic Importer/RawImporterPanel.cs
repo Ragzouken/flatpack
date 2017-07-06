@@ -36,6 +36,8 @@ public class RawImporterPanel : MonoBehaviour
     private AspectRatioFitter fitter;
     [SerializeField]
     private RawImage previewImage;
+    [SerializeField]
+    private AudioSource scrubSound;
 
     private WebCamTexture webcam;
     
@@ -181,6 +183,7 @@ public class RawImporterPanel : MonoBehaviour
     {
         capturePrompt.SetActive(false);
         scrubPrompt.SetActive(false);
+        scrubSound.Stop();
 
         maskImage.gameObject.SetActive(false);
 
@@ -218,6 +221,9 @@ public class RawImporterPanel : MonoBehaviour
 
         if (mask == null)
         {
+            scrubSound.Stop();
+            dragging = false;
+
             return;
         }
 
@@ -254,6 +260,15 @@ public class RawImporterPanel : MonoBehaviour
         else
         {
             dragging = false;
+        }
+
+        if (scrubSound.isPlaying && !dragging)
+        {
+            scrubSound.Stop();
+        }
+        else if (!scrubSound.isPlaying && dragging)
+        {
+            scrubSound.Play();
         }
     }
 }

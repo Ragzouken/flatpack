@@ -20,6 +20,8 @@ public class StoryBrowser : MonoBehaviour
     private Text descriptionText;
     [SerializeField]
     private CanvasGroup buttonGroup;
+    [SerializeField]
+    private GameObject exportConfirm;
 
     [Header("Browse")]
     [SerializeField]
@@ -81,7 +83,7 @@ public class StoryBrowser : MonoBehaviour
 
         var story = Saves.LoadStory(Selected);
 
-        StartCoroutine(Saves.ExportStory(story));
+        StartCoroutine(Saves.ExportStory(story, () => exportConfirm.SetActive(true)));
     }
 
     public void CopySelected()

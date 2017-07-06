@@ -174,7 +174,8 @@ public static class Saves
         }
     }
 
-    public static IEnumerator ExportStory(FlatStory story)
+    public static IEnumerator ExportStory(FlatStory story,
+                                          Action OnComplete=null)
     {
         string root;
 
@@ -243,6 +244,11 @@ public static class Saves
         foreach (string file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories))
         {
             RefreshAndroidFile(file);
+        }
+
+        if (OnComplete != null)
+        {
+            OnComplete();
         }
     }
 
