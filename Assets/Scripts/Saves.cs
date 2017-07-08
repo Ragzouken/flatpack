@@ -174,20 +174,38 @@ public static class Saves
         }
     }
 
+    public static string musicRoot
+    {
+        get
+        {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+#elif UNITY_ANDROID
+            return "/storage/emulated/0/Download";
+#else
+            return Application.persistentDataPath + "/music";
+#endif
+        }
+    }
+
+    public static string exportRoot
+    {
+        get
+        {
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+#elif UNITY_ANDROID
+            return "/storage/emulated/0/Download";
+#else
+            return Application.persistentDataPath + "/stories";
+#endif
+        }
+    }
+
     public static IEnumerator ExportStory(FlatStory story,
                                           Action OnComplete=null)
     {
-        string root;
-
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-        root = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-#elif UNITY_ANDROID
-        root = "/storage/emulated/0/Download";
-#else
-        Debug.Log("Export not supported on this platform!");
-        yield break;
-#endif
-
+        string root = exportRoot;
         root = Path.Combine(root, "Flatpack Exports");
         string name = Sanitize(story.blurb.name);
         string folder = Path.Combine(root, name);

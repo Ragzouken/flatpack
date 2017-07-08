@@ -92,6 +92,11 @@ public class Main : MonoBehaviour
     private void Start()
     {
         Application.RequestUserAuthorization(UserAuthorization.WebCam);
+
+#if !UNITY_WEBGL
+        Directory.CreateDirectory(Saves.musicRoot);
+        Directory.CreateDirectory(Saves.exportRoot);
+#endif
     }
 
     public void Exit()
@@ -345,7 +350,7 @@ public class Main : MonoBehaviour
 
     public IEnumerator LoadFromImported(string id)
     {
-#if UNITY_EDITOR || UNITY_ANDROID
+#if UNITY_EDITOR || UNITY_ANDROID || UNITY_IOS
         return LoadFromURL("file://" + Application.persistentDataPath + "/imported/" + id + ".png", id: id);
 #else
         return LoadFromURL(Application.streamingAssetsPath + "/" + story.blurb.id + "/" + id + ".png", id: id);
@@ -355,10 +360,10 @@ public class Main : MonoBehaviour
 
     public string GetMusicPath(string id)
     {
-#if UNITY_EDITOR || UNITY_ANDROID
-        return "file:///storage/emulated/0/Download/" + id;
-#else
+#if UNITY_WEBGL
         return Application.streamingAssetsPath + "/" + story.blurb.id + "/" + id;
+#else
+        return string.Format("file://{0}/{1}", Saves.musicRoot, id);
 #endif
     }
 
