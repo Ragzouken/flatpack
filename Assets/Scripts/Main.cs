@@ -99,6 +99,11 @@ public class Main : MonoBehaviour
 #endif
     }
 
+    public void GoToTitle()
+    {
+        titleScreen.SetActive(true);
+    }
+
     public void Exit()
     {
         Application.Quit();

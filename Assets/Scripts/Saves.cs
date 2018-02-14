@@ -188,6 +188,13 @@ public static class Saves
         }
     }
 
+    public static string GetAndroidDownloadFolder()
+    {
+        string[] temp=(Application.persistentDataPath.Replace ("Android","")).Split (new string[] { "//" },System.StringSplitOptions.None);
+   
+        return (temp [0] + "/Download");
+    }
+
     public static string exportRoot
     {
         get
@@ -195,7 +202,8 @@ public static class Saves
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 #elif UNITY_ANDROID
-            return "/storage/emulated/0/Download";
+            //return "/storage/emulated/0/Download";
+            return GetAndroidDownloadFolder();
 #else
             return Application.persistentDataPath + "/stories";
 #endif

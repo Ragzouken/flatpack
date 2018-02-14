@@ -10,6 +10,8 @@ using Random = UnityEngine.Random;
 
 public class RawImporterPanel : MonoBehaviour
 {
+    public bool StandaloneMode;
+
     [SerializeField]
     private Main main;
 
@@ -54,6 +56,16 @@ public class RawImporterPanel : MonoBehaviour
         previewImage.texture = webcam;
     }
 
+    public void SetStandlone()
+    {
+        StandaloneMode = true;
+    }
+
+    public void SetNormal()
+    {
+        StandaloneMode = false;
+    }
+
     public void Close()
     {
         if (webcam != null)
@@ -64,6 +76,12 @@ public class RawImporterPanel : MonoBehaviour
         gameObject.SetActive(false);
 
         Reset();
+
+        if (StandaloneMode)
+        {
+            StandaloneMode = false;
+            main.GoToTitle();
+        }
     }
 
     private void OnEnable()
@@ -170,13 +188,26 @@ public class RawImporterPanel : MonoBehaviour
         string root = Application.persistentDataPath + "/imported/";
         string name = id + ".png";
 
+        if (StandaloneMode)
+        {
+            name = "flatpack-" + name;
+            root = Saves.exportRoot + "/";
+        } 
+
         System.IO.Directory.CreateDirectory(root);
         System.IO.File.WriteAllBytes(root + name, next.EncodeToPNG());
+        Saves.RefreshAndroidFile(root + name);
 
-        main.InsertImported(id, next);
-        main.Save();
-
-        Close();
+        if (StandaloneMode)
+        {
+            RetryPhoto();
+        }
+        else
+        {
+            main.InsertImported(id, next);
+            main.Save();
+            Close();
+        }
     }
 
     public void Reset()
