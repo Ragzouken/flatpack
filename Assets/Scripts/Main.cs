@@ -101,6 +101,11 @@ public class Main : MonoBehaviour
 
     public void GoToTitle()
     {
+        foreach (Transform test in (IEnumerable<Transform>) transform)
+        {
+
+        }
+
         titleScreen.SetActive(true);
     }
 

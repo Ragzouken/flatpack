@@ -47,7 +47,7 @@ public static class Saves
 
      public static void RefreshAndroidFile(string path)
      {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         if(!File.Exists(path))
              return;
  

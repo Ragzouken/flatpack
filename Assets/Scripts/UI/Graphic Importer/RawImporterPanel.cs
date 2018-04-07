@@ -30,6 +30,8 @@ public class RawImporterPanel : MonoBehaviour
     private GameObject capturePrompt;
     [SerializeField]
     private GameObject scrubPrompt;
+    [SerializeField]
+    private GameObject keepPrompt;
 
     [SerializeField]
     private Image maskImage;
@@ -47,12 +49,17 @@ public class RawImporterPanel : MonoBehaviour
     private Coroutine loading;
 
     private TextureByte.Sprite brush;
+    private WebCamTexture webcamTexture;
+
+    [SerializeField]
+    private CanvasGroup savedPopup;
 
     private void Awake()
     {
         brush = TextureByte.Draw.Circle(64, 255);
-        webcam = new WebCamTexture();
+        webcam = new WebCamTexture(2000, 2000);
 
+        webcamTexture = webcam;
         previewImage.texture = webcam;
     }
 
@@ -107,6 +114,7 @@ public class RawImporterPanel : MonoBehaviour
         captureButton.interactable = false;
         capturePrompt.SetActive(false);
         scrubPrompt.SetActive(true);
+
     }
 
     public void RetryPhoto()
@@ -125,14 +133,41 @@ public class RawImporterPanel : MonoBehaviour
         Close();
     }
 
-    public void AcceptPhoto()
+    private Texture2D previewTexture;
+
+    public IEnumerator FadeSavedPopup()
     {
+        float limit = 2f;
+        float timer = limit;
+
+        while (timer > 0)
+        {
+            savedPopup.alpha = Mathf.InverseLerp(0, limit, timer);
+
+            timer -= Time.deltaTime;
+
+            yield return null;
+        }
+
+        savedPopup.alpha = 0;
+    }
+
+    public void PreviewPhoto()
+    {
+        scrubPrompt.SetActive(false);
+        keepPrompt.SetActive(true);
+
         Color32 clear = Color.clear;
 
         var pix = webcam.GetPixels32();
 
         int min_x = webcam.width, min_y = webcam.height, max_x = 0, max_y = 0;
+        min_x = 0;
+        min_y = 0;
+        max_x = webcam.width - 1;
+        max_y = webcam.height - 1;
 
+        /*
         for (int y = 0; y < webcam.height; ++y)
         {
             for (int x = 0; x < webcam.width; ++x)
@@ -148,6 +183,7 @@ public class RawImporterPanel : MonoBehaviour
                 }
             }
         }
+        */
 
         //Debug.LogFormat("{0} {1} {2} {3}", min_x, min_y, max_x, max_y);
 
@@ -159,12 +195,12 @@ public class RawImporterPanel : MonoBehaviour
             }
         }
 
-        var next = new Texture2D(max_x - min_x + 1, 
-                                 max_y - min_y + 1, 
-                                 TextureFormat.ARGB32, 
-                                 false);
+        previewTexture = new Texture2D(max_x - min_x + 1, 
+                                       max_y - min_y + 1, 
+                                       TextureFormat.ARGB32, 
+                                       false);
 
-        var pixels = next.GetPixels32();
+        var pixels = previewTexture.GetPixels32();
 
         {
             int ti = 0;
@@ -181,9 +217,15 @@ public class RawImporterPanel : MonoBehaviour
             }
         }
 
-        next.SetPixels32(pixels);
-        next.Apply();
+        previewTexture.SetPixels32(pixels);
+        previewTexture.Apply();
 
+        previewImage.texture = previewTexture;
+        maskImage.gameObject.SetActive(false);
+    }
+
+    public void AcceptPhoto()
+    {
         string id = Guid.NewGuid().ToString();
         string root = Application.persistentDataPath + "/imported/";
         string name = id + ".png";
@@ -195,7 +237,7 @@ public class RawImporterPanel : MonoBehaviour
         } 
 
         System.IO.Directory.CreateDirectory(root);
-        System.IO.File.WriteAllBytes(root + name, next.EncodeToPNG());
+        System.IO.File.WriteAllBytes(root + name, previewTexture.EncodeToPNG());
         Saves.RefreshAndroidFile(root + name);
 
         if (StandaloneMode)
@@ -204,10 +246,22 @@ public class RawImporterPanel : MonoBehaviour
         }
         else
         {
-            main.InsertImported(id, next);
+            main.InsertImported(id, previewTexture);
             main.Save();
             Close();
         }
+    }
+
+    public void ClickSave()
+    {
+        AcceptPhoto();
+
+        StartCoroutine(FadeSavedPopup());
+    }
+
+    public void ClickDiscard()
+    {
+        RetryPhoto();
     }
 
     public void Reset()
@@ -215,7 +269,10 @@ public class RawImporterPanel : MonoBehaviour
         capturePrompt.SetActive(false);
         scrubPrompt.SetActive(false);
         scrubSound.Stop();
+        keepPrompt.SetActive(false);
+        savedPopup.alpha = 0;
 
+        previewImage.texture = webcamTexture;
         maskImage.gameObject.SetActive(false);
 
         if (mask != null)
@@ -247,7 +304,10 @@ public class RawImporterPanel : MonoBehaviour
             float w = webcam.width;
             float h = webcam.height;
 
-            fitter.aspectRatio = w / h;
+            fitter.aspectRatio = 640 / 480f; //w / h;
+
+            float ratio = 640f / 480f;
+            previewImage.uvRect = new Rect(0, 0, 1 / ratio, 1);
         }
 
         if (mask == null)
